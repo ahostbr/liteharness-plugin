@@ -4,3 +4,5 @@
 # plugin version — which would freeze the Claude Code CLI cache on the old set.
 # Enabled via: git config core.hooksPath .githooks
 python scripts/check_version_bump.py || exit 1
+# Privacy gate: block author machine paths / personal data from entering the public repo.
+python scripts/check_pii.py || exit 1
