@@ -1,0 +1,43 @@
+{
+  "name": "liteharness",
+  "version": "1.0.8",
+  "description": "Multi-CLI agent orchestration for spawning, messaging, and coordinating AI coding agents across Claude Code, Codex, Copilot, and more.",
+  "author": {
+    "name": "Ryan Devlin",
+    "email": "support@litesuite.dev",
+    "url": "https://litesuite.dev"
+  },
+  "homepage": "https://litesuite.dev",
+  "repository": "https://github.com/AHostBR/liteharness",
+  "license": "MIT",
+  "keywords": [
+    "orchestration",
+    "multi-agent",
+    "multi-cli",
+    "codex",
+    "copilot",
+    "agent-swarm",
+    "polymathic",
+    "liteharness"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "LiteHarness",
+    "shortDescription": "Spawn, message, and coordinate coding agents",
+    "longDescription": "LiteHarness brings multi-CLI agent orchestration into Codex with shared inbox messaging, deterministic agent identity, polymathic agent workflows, and tools for spawning, discovering, and controlling coding agents across local CLI surfaces.",
+    "developerName": "Ryan Devlin",
+    "category": "Coding",
+    "capabilities": ["Interactive", "Write"],
+    "websiteURL": "https://litesuite.dev",
+    "privacyPolicyURL": "https://litesuite.dev/privacy",
+    "termsOfServiceURL": "https://litesuite.dev/terms",
+    "defaultPrompt": [
+      "Start LiteHarness and check my inbox",
+      "Discover active LiteHarness agents",
+      "Spawn a polymathic debugging agent"
+    ],
+    "brandColor": "#10A37F",
+    "screenshots": []
+  }
+}

@@ -1,0 +1,15 @@
+*.db
+__pycache__/
+*.pyc
+node_modules/
+*.tmp
+
+# Private (personal) skills — local-only, NEVER publish (PII: cameras, family, identity)
+skills/ls-discord-watch/
+skills/discord-watch/
+skills/ls-streaming-sl-obs/
+skills/streaming-sl-obs/
+
+# Private orchestrator (PII: session id, monitor screenshots) — local-only
+skills/sentinel/
+**/.liteeditor/

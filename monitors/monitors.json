@@ -1,0 +1,7 @@
+[
+  {
+    "name": "liteharness-inbox",
+    "command": "python -m liteharness.hooks watch-auto",
+    "description": "LiteHarness inter-agent inbox — receives messages from other coding agents"
+  }
+]

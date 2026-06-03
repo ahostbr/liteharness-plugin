@@ -1,0 +1,6 @@
+#!/bin/sh
+# LiteHarness plugin pre-commit guard.
+# Blocks catalog changes (skills/agents/commands/hooks) that forget to bump the
+# plugin version — which would freeze the Claude Code CLI cache on the old set.
+# Enabled via: git config core.hooksPath .githooks
+python scripts/check_version_bump.py || exit 1
