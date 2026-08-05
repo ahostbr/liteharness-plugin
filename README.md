@@ -77,7 +77,6 @@ In Claude Code, invoke skills directly:
 | `liteharness:ls-librarian`           | Workspace knowledge curation (Eratosthenes)        |
 | `liteharness:ls-discord-watch`       | Discord DM watcher + push notifications            |
 | `liteharness:ls-spawnteam`           | Spawn a Claude Code agent team                     |
-| `liteharness:ls-release-litesuite`   | Full LiteSuite release pipeline                    |
 | `liteharness:ls-train`               | Autonomous agent/skill training loop               |
 
 Run `/library list` for the complete catalog.
