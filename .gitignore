@@ -12,4 +12,15 @@ skills/streaming-sl-obs/
 
 # Private orchestrator (PII: session id, monitor screenshots) — local-only
 skills/sentinel/
+
+# Operator-internal release runbook — local-only, NEVER publish.
+# It names every build-time secret variable, states which conditions leave
+# licence verification disabled, and documents the download kill-switch. No
+# secret VALUES, but it is a map of the licence-enforcement seams.
+# It was public from 2026-06-03 to 2026-08-05 because it was never listed here
+# and a "publish the accumulated skill work" sweep picked it up. Remediated by
+# deleting and recreating the repo (force-push alone does NOT remove orphaned
+# objects — GitHub still serves them by SHA). Authoritative copy now lives at
+# ~/.claude/skills/ls-release-litesuite/.
+skills/ls-release-litesuite/
 **/.liteeditor/
