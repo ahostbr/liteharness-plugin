@@ -6,10 +6,10 @@ Native **Claude Code marketplace plugin** delivering the LiteHarness skills + ag
 
 LiteHarness ships in two repos that work together, not duplicates:
 
-| Repo | What it is | Install command |
-|---|---|---|
-| **[ahostbr/liteharness-plugin](https://github.com/ahostbr/liteharness-plugin)** (this repo) | Native Claude Code marketplace plugin — same skills + agents catalog, delivered via Claude's plugin system | `/plugin marketplace add ahostbr/liteharness-plugin && /plugin install liteharness@liteharness` |
-| **[ahostbr/liteharness](https://github.com/ahostbr/liteharness)** | Python runtime engine + universal installer for **all CLIs without a native plugin system** (Codex, Copilot, Pi, OpenCode, Gemini, Cursor, Continue, Antigravity, Crush, ...) | `pip install liteharness` |
+| Repo                                                                                        | What it is                                                                                                                                                                    | Install command                                                                                 |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **[ahostbr/liteharness-plugin](https://github.com/ahostbr/liteharness-plugin)** (this repo) | Native Claude Code marketplace plugin — same skills + agents catalog, delivered via Claude's plugin system                                                                    | `/plugin marketplace add ahostbr/liteharness-plugin && /plugin install liteharness@liteharness` |
+| **[ahostbr/liteharness](https://github.com/ahostbr/liteharness)**                           | Python runtime engine + universal installer for **all CLIs without a native plugin system** (Codex, Copilot, Pi, OpenCode, Gemini, Cursor, Continue, Antigravity, Crush, ...) | `pip install liteharness`                                                                       |
 
 The skills + agents catalog is **the same content** — only the delivery mechanism differs. Claude users get this plugin (native). Every other CLI installs the catalog via the `liteharness` pip package's universal installer (opt-in per CLI through the LiteSuite setup wizard).
 
@@ -66,19 +66,19 @@ In Claude Code, invoke skills directly:
 
 ## Skills (selection — 60+ total)
 
-| Skill | Purpose |
-|---|---|
-| `liteharness:ls-sentinel` | Primary orchestrator protocol |
-| `liteharness:ls-arch` | Load canonical LiteSuite architecture index |
-| `liteharness:ls-library` | Catalog of all skills + agents + commands |
-| `liteharness:ls-vault` | Obsidian vault commands (note/daily/search/import) |
-| `liteharness:ls-conversation-lookup` | RAG over every past conversation |
-| `liteharness:ls-plan-w-quizmaster` | Plan with Ultimate Quizzer methodology |
-| `liteharness:ls-librarian` | Workspace knowledge curation (Eratosthenes) |
-| `liteharness:ls-discord-watch` | Discord DM watcher + push notifications |
-| `liteharness:ls-spawnteam` | Spawn a Claude Code agent team |
-| `liteharness:ls-release-litesuite` | Full LiteSuite release pipeline |
-| `liteharness:ls-train` | Autonomous agent/skill training loop |
+| Skill                                | Purpose                                            |
+| ------------------------------------ | -------------------------------------------------- |
+| `liteharness:ls-sentinel`            | Primary orchestrator protocol                      |
+| `liteharness:ls-arch`                | Load canonical LiteSuite architecture index        |
+| `liteharness:ls-library`             | Catalog of all skills + agents + commands          |
+| `liteharness:ls-vault`               | Obsidian vault commands (note/daily/search/import) |
+| `liteharness:ls-conversation-lookup` | RAG over every past conversation                   |
+| `liteharness:ls-plan-w-quizmaster`   | Plan with Ultimate Quizzer methodology             |
+| `liteharness:ls-librarian`           | Workspace knowledge curation (Eratosthenes)        |
+| `liteharness:ls-discord-watch`       | Discord DM watcher + push notifications            |
+| `liteharness:ls-spawnteam`           | Spawn a Claude Code agent team                     |
+| `liteharness:ls-release-litesuite`   | Full LiteSuite release pipeline                    |
+| `liteharness:ls-train`               | Autonomous agent/skill training loop               |
 
 Run `/library list` for the complete catalog.
 
@@ -86,13 +86,13 @@ Run `/library list` for the complete catalog.
 
 49 polymathic thinkers + specialists + pentest + thinker lenses + workflow agents:
 
-| Category | Examples |
-|---|---|
+| Category            | Examples                                                                                                                                                                                                                                     |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Polymathic (49)** | `polymathic-feynman`, `polymathic-carmack`, `polymathic-shannon`, `polymathic-linus`, `polymathic-lovelace`, `polymathic-jobs`, `polymathic-bezos`, `polymathic-thiel`, `polymathic-knuth`, `polymathic-davinci`, `polymathic-einstein`, ... |
-| **Specialists** | `specialist-doc-writer`, `specialist-librarian`, `specialist-perf-optimizer`, `specialist-security-auditor`, `specialist-test-generator` |
-| **Pentest (9)** | `pentest-pre-recon`, `pentest-recon`, `pentest-injection`, `pentest-xss`, `pentest-auth`, `pentest-authz`, `pentest-ssrf`, `pentest-evasion`, `pentest-report` |
-| **Thinkers** | `thinker-skeptic`, `thinker-red-team`, `thinker-blue-team`, `thinker-systems`, `thinker-pragmatist`, ... |
-| **Workflow** | `meta-agent`, `meta-challenger`, `mp-builder`, `mp-validator`, `prd-*` (executor/reviewer/validator/primer/...) |
+| **Specialists**     | `specialist-doc-writer`, `specialist-librarian`, `specialist-perf-optimizer`, `specialist-security-auditor`, `specialist-test-generator`                                                                                                     |
+| **Pentest (9)**     | `pentest-pre-recon`, `pentest-recon`, `pentest-injection`, `pentest-xss`, `pentest-auth`, `pentest-authz`, `pentest-ssrf`, `pentest-evasion`, `pentest-report`                                                                               |
+| **Thinkers**        | `thinker-skeptic`, `thinker-red-team`, `thinker-blue-team`, `thinker-systems`, `thinker-pragmatist`, ...                                                                                                                                     |
+| **Workflow**        | `meta-agent`, `meta-challenger`, `mp-builder`, `mp-validator`, `prd-*` (executor/reviewer/validator/primer/...)                                                                                                                              |
 
 See `agents/` directory for the full list.
 

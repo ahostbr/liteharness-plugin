@@ -1,6 +1,6 @@
 {
   "name": "liteharness",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Multi-CLI agent orchestration for spawning, messaging, and coordinating AI coding agents across Claude Code, Codex, Copilot, and more.",
   "author": {
     "name": "Ryan Devlin",

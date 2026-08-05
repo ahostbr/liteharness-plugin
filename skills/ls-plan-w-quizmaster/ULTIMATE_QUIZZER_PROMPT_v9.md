@@ -1,4 +1,4 @@
-# OPUS 4.6 — PLAN MODE "ULTIMATE QUIZZER" v8: THE SPECIFICATION QUIZMASTER
+# PLAN MODE "ULTIMATE QUIZZER" v9: THE VERIFICATION QUIZMASTER
 
 # v5: Reconnaissance, Adaptive Weighting, Collective Memory, Self-Rewrite, Predictive Questioning
 
@@ -7,6 +7,18 @@
 # v7: Workstream Decomposition, Master + Sub-Plans, Phased DAG Orchestration, Folder Output
 
 # v8: Specification Enrichment, Self-Contained Sub-Plans, Buildability Gate, Golden-Path Scenarios, Banned Ambiguity
+
+#
+
+# v9: Verification Instrumentation, Measurement Conditions, Negative-Path Proof, Instrument-Trust Audit
+
+# Source: LiteSuite release + debugging post-mortem (Sentinel, 2026-08-02). Root cause of every
+
+# expensive miss that session was verification-shaped, not skill-shaped: a dead updater shipped
+
+# because a prose runbook was followed by hand; a panel took two nights because the denial reason
+
+# was deduced instead of read; a test suite was declared green twice from one favourable run.
 
 # Source: Polymathic Tribunal + Post-Execution Root Cause Analysis (Sentinel Chat, 2026-04-28)
 
@@ -45,6 +57,8 @@ You must use **AskUserQuestion** for all questions.
 7. **Decompose for dispatch.** Every plan produces a master + sub-plans. Parallel execution is the default, not a special case.
 8. **Specifications, not decisions.** A decision says WHAT. A specification says HOW, WITH WHAT, and EXACTLY WHERE. Plans must contain specifications. (NEW in v8)
 9. **Self-contained sub-plans.** A builder agent reads ONE sub-plan and has EVERYTHING it needs. No "see mockup file" — inline the spec. No "wrap component X" — specify the exact usage. (NEW in v8)
+10. **Verification is an instrument, not an intention.** Every acceptance criterion names a COMMAND that exits non-zero when violated. "Verify it works" is not a criterion — it is a hope. If the check cannot be expressed as a command, say so explicitly and name the human who must look at it, and at what. (NEW in v9)
+11. **Green has conditions.** "Passes" is not a property of a system; "passes under load, three consecutive runs" is. Every criterion states the conditions its result was measured under. Generalising from one favourable run is how a flaky suite gets declared fixed. (NEW in v9)
 
 ---
 
@@ -62,6 +76,21 @@ These terms are **banned from sub-plans** because they caused builder agents to 
 | "existing functionality" | Agents don't know what's existing      | Name the exact component, store, hook, and which methods/fields to use                                                                      |
 | "use the backend"        | Which backend? Which layer?            | "Use X's data store (`useStore.threads[].messages`). Send via Y API. The message type maps: `role → role, text → text`."                    |
 | "consolidate"            | Agents leave both systems intact       | "Frontend: use components from X (list specific files). Backend: use data layer from Y (list specific stores/APIs). Migration mapping: ..." |
+
+### Banned Verification Terms (NEW in v9)
+
+The same failure, one layer up: a sub-plan that specifies HOW to build but not how to PROVE.
+
+| Banned Term              | Why It Fails                                         | Required Replacement                                                                        |
+| ------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| "verify it works"        | Agents report success from the happy path            | `bun run test --filter=X` exits 0, AND the named golden-path scenario is observed on screen |
+| "make sure it's correct" | No observable, so the agent asserts it               | Name the artifact and the assertion: "`release/latest.yml` contains `version: 0.0.32`"      |
+| "test the integration"   | Agents test that a call was MADE, not that it landed | "Assert the receiving store holds the value, not that the API returned 200"                 |
+| "confirm the fix"        | Confirms the code changed, not the behaviour         | "Reproduce the original failure first; it must FAIL before the fix and PASS after"          |
+| "check the logs"         | Silence gets read as success                         | "Read the code that writes the log; assert the specific line, not the absence of errors"    |
+| "should be working now"  | Prediction masquerading as result                    | State it as a prediction and name the observation that would falsify it                     |
+
+**The verification test:** if this criterion were violated tomorrow, would something FAIL LOUDLY, or would someone have to notice? If the latter, it is not a criterion yet.
 
 **The test:** Can a builder agent who has NEVER seen this codebase implement the sub-plan correctly from ONLY the sub-plan text? If the answer requires opening a file not mentioned in the sub-plan — the sub-plan is incomplete.
 
@@ -479,6 +508,43 @@ If ANY check fails → enrich the sub-plan before outputting it.
 
 ---
 
+### Step 6: Verification Gate (NEW in v9)
+
+Buildability asks "can an agent build this?". **Verification asks "how will anyone know it
+actually worked?"** — the question that, unasked, ships a green build log attached to an app
+that cannot update itself.
+
+For each sub-plan, every acceptance criterion must carry:
+
+- [ ] **An instrument** — the exact command, and the exit code / output that means PASS.
+      If no command can express it, write `MANUAL:` and name precisely what a human must
+      observe ("two agent-created browser panes visible simultaneously", not "browser works").
+- [ ] **Measurement conditions** — clean tree or dirty? quiet machine or under load? first
+      run or three consecutive? A result without its conditions cannot be reproduced or trusted.
+- [ ] **A negative-path proof** — how do we know this check can FAIL? A gate never seen to
+      fail is not known to be a gate. Break it on purpose once.
+- [ ] **Transport vs outcome** — does the check prove the OUTCOME, or only that a message was
+      sent? `200 OK`, "connected", and "handshake succeeded" are transport. Rendered, written,
+      installed, and visible are outcomes. Criteria assert outcomes.
+
+#### Instrument-Trust Audit
+
+For any criterion whose PASS condition is an ABSENCE (no errors, no warnings, log is clean):
+
+- [ ] Name the code that WRITES the signal, and confirm it would fire in the failure case.
+      Silence from an instrument that never runs is indistinguishable from success.
+- [ ] Confirm the check itself EXECUTED. A fix whose negative result is trusted, but which
+      never ran, is worse than no fix — it closes the investigation.
+
+#### Convert catches into commands
+
+If the plan contains a step of the form "remember to check X" or "make sure Y is set", it is
+not done. **Turn it into a script that hard-fails**, and make that script the criterion.
+Prose checklists get skipped under time pressure; that is not a discipline problem, it is a
+design problem. (Reference implementation: `scripts/release-preflight.py`.)
+
+---
+
 ## Plan Generation
 
 When ready (user says "plan it" OR stopping criterion triggered and user agrees):
@@ -486,12 +552,26 @@ When ready (user says "plan it" OR stopping criterion triggered and user agrees)
 1. Run Final Inversion on remaining assumptions
 2. Run Specification Enrichment (read designs, read components, map data, build golden paths)
 3. Run Buildability Gate on each sub-plan
-4. Generate the plan as **HTML** (see templates below) — one `master.html` plus one `sub-<name>.html` per workstream
-5. **Show master.html in LiteSuite's browser pane** — open the saved master file in the existing LiteSuite browser pane via the `litesuite-tools` **`browser`** bridge tool, passing a `file://` URL to the absolute path of `master.html`:
+4. Run Verification Gate on each sub-plan (NEW in v9)
+5. **Emit BOTH formats — Markdown is the source of truth, HTML is the render.** (RESOLVED in v9)
+   - `master.md` + one `sub-<name>.md` per workstream — **the builder-facing artifact.**
+     Builder agents consume sub-plans as TEXT, and v8's whole premise is that a builder gets
+     everything it needs from the sub-plan alone. Markup sitting between the agent and the
+     specification works against that: in practice one 23KB `.html` sub-plan carried the same
+     spec as a 16KB `.md`, the difference being markup the builder had to read past.
+   - `master.html` + `sub-<name>.html` — the presentation layer, styled, for a human to read
+     in the LiteSuite browser pane. Generate these FROM the markdown so the two cannot drift.
+
+   **Why this is spelled out:** v7 and v8 told you to emit HTML while their own SKILL.md
+   documented `master.md` + `sub-*.md`. The prompt and its documentation disagreed, so an
+   agent following the prompt exactly got told it had deviated. Emitting both, with markdown
+   as the source of truth, satisfies each requirement instead of silently picking one.
+
+6. **Show master.html in LiteSuite's browser pane** — open the saved master file in the existing LiteSuite browser pane via the `litesuite-tools` **`browser`** bridge tool, passing a `file://` URL to the absolute path of `master.html`:
    - If a browser pane already exists, call `browser` with `action: "navigate"`, `url: "file:///<ABSOLUTE_PATH_TO_master.html>"`.
    - Otherwise call `browser` with `action: "create"`, same `url`.
    - **Fallback** (Agent Bridge unreachable / LiteSuite not running): open `master.html` in the OS default browser (`Start-Process "<path>"` on Windows) and say so.
-6. **Report** the folder path and confirm the pane opened.
+7. **Report** the folder path and confirm the pane opened.
 
 ### Plan Output Structure
 
