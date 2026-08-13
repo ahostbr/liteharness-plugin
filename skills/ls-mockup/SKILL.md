@@ -685,20 +685,54 @@ cat <MOCKUP_PROJECT_DIR>/.mockup-io/<mockupId>/session.json
 **Uploads are real files at absolute paths — open them with the Read tool.** They are images; you
 can see them.
 
-### Waiting for an answer
+### 🔴 MANDATORY: arm the answer watcher BEFORE you hand over the URL
 
-Do not poll in a loop. Arm a Monitor and keep working:
+**A driven page is not delivered until a Monitor is watching its session file.** The user
+answers in the browser and _nothing tells you_. Without the watcher you find out only when
+they type "i saved it" — which has happened — and that wasted round trip is the exact thing
+the two-way design exists to remove.
+
+Arm it the moment the page renders, and give them the URL in the same message.
 
 ```
 Monitor({
-  description: "driven mockup answers",
+  description: "<mockupId> answers",   // be specific — this text appears in every notification
   persistent: true,
   timeout_ms: 3600000,
-  command: "<watch .mockup-io/<id>/session.json and echo on change>",
+  command: <the one-liner below>,
 })
 ```
 
-`revision` is what distinguishes a real change from a touch — compare it, not the mtime.
+```bash
+F=<MOCKUP_PROJECT_DIR>/.mockup-io/<mockupId>/session.json
+last=""
+while true; do
+  cur=$(python -c "import json,sys;print(json.load(open(sys.argv[1]))['revision'])" "$F" 2>/dev/null || echo "-")
+  if [ "$cur" != "$last" ]; then
+    [ -n "$last" ] && echo "<mockupId> answered — revision $last -> $cur"
+    last="$cur"
+  fi
+  sleep 3
+done
+```
+
+Behaviour, tested both directions before this went into the skill:
+
+| condition                                                            | result                                              |
+| -------------------------------------------------------------------- | --------------------------------------------------- |
+| session file does not exist yet (created lazily on the first answer) | silent — no spam                                    |
+| first tick after arming                                              | silent — seeds the baseline instead of firing on it |
+| a real answer lands                                                  | fires **once** — `answered — revision 11 -> 12`     |
+
+**Compare `revision`, never mtime.** `revision` is monotonic and bumps only on a real write;
+mtime also moves for a touch, a temp-file rename, or an editor save. The session writer uses
+write-then-rename, so mtime would fire on a partial write that `revision` correctly ignores.
+
+On each notification: read the session file, act on the **new** answers only, and rewrite the
+page so they can see the answer landed. Never re-ask something already answered.
+
+**`TaskStop` the monitor when the page is finished** — a persistent monitor outlives the task
+that needed it.
 
 ## Rules for driven pages
 
@@ -711,6 +745,9 @@ Monitor({
    mockup that never changes is just a form.
 4. **Seed sensible defaults**, so an unanswered page is still a coherent design.
 5. **`.mockup-io/` is gitignored** — session data is not source.
+6. **Arm the watcher before you share the URL** (see above). A driven page with nobody
+   listening is a one-way page with extra steps — and the user has no way to tell, because
+   from their side it looks exactly like a page that is being watched.
 
 ## Operational gotchas
 

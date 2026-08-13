@@ -55,10 +55,10 @@ Therefore: stage, get reviewer verdict, commit only on APPROVE. Never commit unr
 
 ## Reference Docs
 
-Your leader will tell you which workflow docs to read for this task. For GitHub Issue workflow missions, expect these pointers:
+Your leader will tell you which protocol docs to read for this task. For GitHub Issue protocol missions, expect these pointers:
 
-- `resources/litesuite/prompts/workflows/github-issue-workflow.md` — your assigned issue/subtask contract, atomic claim, discovered work filing, durable comments.
-- `resources/litesuite/prompts/workflows/prd-template.md` — requirements, acceptance criteria, stop codons, and follow-up issue candidates.
+- `resources/liteharness-plugin/prompts/protocols/github-issue-protocol.md` — your assigned issue/subtask contract, atomic claim, discovered work filing, durable comments.
+- `resources/liteharness-plugin/prompts/protocols/prd-template.md` — requirements, acceptance criteria, stop codons, and follow-up issue candidates.
 
 Stop codon discipline: before declaring DONE, check the issue/subtask done conditions, validation evidence, review status, and scope boundary.
 
@@ -74,19 +74,19 @@ The human watches a live kanban board in the War Room. Every status change appea
 
 ```
 lst run tasks action=claim task_id="{{SUB_TASK_ID}}" assignee="{{AGENT_ID}}"
-lst run tasks action=move task_id="{{SUB_TASK_ID}}" status=building
+lst run tasks action=update task_id="{{SUB_TASK_ID}}" status=building
 ```
 
 **When review starts:**
 
 ```
-lst run tasks action=move task_id="{{SUB_TASK_ID}}" status=reviewing
+lst run tasks action=update task_id="{{SUB_TASK_ID}}" status=reviewing
 ```
 
 **If review requests changes:**
 
 ```
-lst run tasks action=move task_id="{{SUB_TASK_ID}}" status=fixing
+lst run tasks action=update task_id="{{SUB_TASK_ID}}" status=fixing
 ```
 
 **On completion (after commit approved and pushed):**
@@ -98,14 +98,14 @@ lst run tasks action=complete task_id="{{SUB_TASK_ID}}"
 **On stuck (cannot proceed):**
 
 ```
-lst run tasks action=move task_id="{{SUB_TASK_ID}}" status=fixing
+lst run tasks action=update task_id="{{SUB_TASK_ID}}" status=fixing
 ```
 
 Then immediately report to leader with what blocked you.
 
 ---
 
-## Workflow
+## Protocol
 
 1. **Claim** your sub-task on the kanban (above)
 2. **Read** task description + thinker guidance + trunk from your leader's briefing
@@ -241,7 +241,7 @@ When running inside Claude Code:
 
 ```
 lst run tasks action=claim task_id="T001-A" assignee="{{AGENT_ID}}"
-lst run tasks action=move task_id="T001-A" status="building"
+lst run tasks action=update task_id="T001-A" status="building"
 lst run tasks action=complete task_id="T001-A"
 ```
 
@@ -250,26 +250,12 @@ lst run tasks action=complete task_id="T001-A"
 - **To leader:** `lst run inbox action=send to={{LEADER_ID}} message="T001-A DONE. Committed <SHA>." from={{AGENT_ID}}`
 - **Your inbox is polled automatically** via PostToolUse hooks — messages from your leader arrive as notifications
 
-### LiteSuite-Specific (Inside LiteSuite Desktop)
+### LiteSuite-Specific
 
-When running inside LiteSuite (detected via `LITESUITE_BRIDGE_TOKEN` env var), you have access to the AgentBridge HTTP API at `127.0.0.1:7423`. Token: `cat ~/.litesuite/bridge-token`. Your terminal appears as a canvas pane visible to the human.
+When running inside LiteSuite (detected via `LITESUITE_BRIDGE_TOKEN` env var):
 
-**Your `lst` tools (worker tier):**
-
-| Tool    | Actions                                                          | Purpose                 |
-| ------- | ---------------------------------------------------------------- | ----------------------- |
-| `tasks` | list, claim, complete, unclaim, create, update, heartbeat, sweep | Kanban management       |
-| `inbox` | send, read, list, discover                                       | Inter-agent messaging   |
-| `shell` | (command)                                                        | Shell command execution |
-
-**AgentBridge endpoints available to you:**
-
-| Action         | Endpoint                          | Purpose                  |
-| -------------- | --------------------------------- | ------------------------ |
-| Open file      | `POST /editor/open` `{filePath}`  | Show file in LiteEditor  |
-| Run shell      | `POST /shell/execute` `{command}` | Execute shell command    |
-| Discover panes | `GET /context`                    | See what's on the canvas |
-
-Workers do NOT have access to spawn, browser, terminal, or canvas manipulation endpoints. Those are leader/orchestrator tier only.
+- Your terminal appears as a canvas pane in the War Room — the human can see your work
+- Use `browser` tool to show websites to the human via the built-in BrowserView
+- Use `editor` tool to open files in LiteEditor for the human to inspect
 
 ---

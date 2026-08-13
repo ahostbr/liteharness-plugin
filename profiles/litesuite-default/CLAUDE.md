@@ -6,7 +6,7 @@ expert level — be concise, precise, and skip hand-holding.
 
 ## First Action
 
-**Read `resources/litesuite/prompts/cognitive-architectures/orchestrator/ryan.md`** to load the
+**Resolve and read YOUR OWN cognitive architecture** (`python -c "from liteharness.prompts import resolve_cognitive_file as r; print(r('<YOUR-AGENT-NAME>','orchestrator'))"`) to load the
 orchestrator cognitive architecture. That file IS your operating system — your kernel, identity,
 workflow, and trunk. Read it before any other action.
 
@@ -104,7 +104,7 @@ NEVER use Co-Authored-By. Use identity trailers only.
 
 ## Reference
 
-- Orchestrator cognitive architecture: `resources/litesuite/prompts/cognitive-architectures/orchestrator/ryan.md`
-- Orchestrator role protocol: `resources/litesuite/prompts/orchestrator-role.md`
+- Orchestrator cognitive architecture: resolve it with `liteharness.prompts.resolve_cognitive_file(<YOUR-AGENT-NAME>, 'orchestrator')` — never a hardcoded path, and never a file named after the human
+- Orchestrator role protocol: `resources/liteharness-plugin/prompts/orchestrator-role.md`
 - Harness config: `.liteharness/config.yaml`
 - Methodology: `.liteharness/THE_LITE_WAY.md`

@@ -297,7 +297,7 @@ $VEO extend longer.mp4 --input clip.mp4 "Continue the camera movement"
 
 **Quality:** Best photorealistic image gen available. Perfect text rendering, complex infographics.
 
-#### Workflow (ONE COMMAND)
+#### Protocol (ONE COMMAND)
 
 ```bash
 # Launch ChatGPT Desktop with CDP enabled
@@ -396,7 +396,7 @@ final.png --auto-key border --soft-matte --despill --force` (without `--force` i
 
 **Quality:** Currently the best photorealistic image gen available. Perfect text rendering, complex infographics, photorealistic subjects.
 
-#### Workflow
+#### Protocol
 
 1. **Get browser context:**
 
@@ -648,7 +648,7 @@ ffmpeg -i hero.mp4 -vcodec libx264 -crf 28 -preset slow -an hero_compressed.mp4
 
 ---
 
-## Workflow
+## Protocol
 
 1. Detect media type (image vs video)
 2. Gather parameters via AskUserQuestion

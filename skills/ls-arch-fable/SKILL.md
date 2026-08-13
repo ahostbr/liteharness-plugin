@@ -39,7 +39,7 @@ most one file.
 (Additional docs 15–17 — landscape notes, voice-model research, LiteModeler —
 and the denser `INDEX.md` are available via `/ls-arch-opus`.)
 
-## Workflow (Fable-safe)
+## Protocol (Fable-safe)
 
 1. Answer from the port map and panel list below, plus the doc table above,
    whenever you can — no file read needed for most questions.

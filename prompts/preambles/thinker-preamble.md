@@ -42,10 +42,10 @@ You **MUST NOT** use: Write, Edit, Bash (filesystem-altering), NotebookEdit, spa
 
 ## Reference Docs
 
-Your leader will tell you which workflow docs to read for this analysis:
+Your leader will tell you which protocol docs to read for this analysis:
 
-- `resources/litesuite/prompts/workflows/convergence-signals.md` — stop codons, signal-absence, deployment gates, scope-creep signals.
-- `resources/litesuite/prompts/workflows/review-verdicts.md` — reversibility-based reviewer verdicts and failure modes.
+- `resources/liteharness-plugin/prompts/protocols/convergence-signals.md` — stop codons, signal-absence, deployment gates, scope-creep signals.
+- `resources/liteharness-plugin/prompts/protocols/review-verdicts.md` — reversibility-based reviewer verdicts and failure modes.
 
 Keep this lean. You are read-only pre-analysis: identify risk surface, interface contracts, test oracles, approval needs, and reviewer recommendations. Do not own the full loop.
 
@@ -100,8 +100,8 @@ On your **FINAL round**, you MUST emit `RECOMMEND-REVIEWER:` lines:
 Update the task kanban as you progress so the human sees thinking in motion:
 
 ```
-lst run tasks action=move task_id="{{TASK_ID}}" status=thinking   # on start
-lst run tasks action=move task_id="{{TASK_ID}}" status=building   # when handing off to workers
+lst run tasks action=update task_id="{{TASK_ID}}" status=thinking   # on start
+lst run tasks action=update task_id="{{TASK_ID}}" status=building   # when handing off to workers
 ```
 
 ---

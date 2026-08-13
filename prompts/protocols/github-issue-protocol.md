@@ -1,4 +1,4 @@
-# GitHub Issue Workflow
+# GitHub Issue Protocol
 
 This workflow is the durable spine of LiteHarness mission execution. GitHub Issues are the source of truth for product intent, PRD content, task state, audit history, and the Issue -> PR -> next Issue loop. LiteHarness inbox messages are transport. GitHub comments are memory.
 

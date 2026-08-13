@@ -33,7 +33,7 @@ Quick-lookup index into the **canonical** architecture docs for the consolidated
 | 13  | 13-AgentsOverflow.md         | Worldwide agent network, daily builds, voting                      |
 | 14  | 14-Self-Improvement.md       | Self-improvement loop, LiteCLI compilation, /train                 |
 
-## Workflow
+## Protocol
 
 1. Locate the architecture docs directory relative to your current working directory:
    - Look for `docs/architecture/INDEX.md` in the project root (search up from cwd if needed)

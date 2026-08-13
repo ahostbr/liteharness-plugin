@@ -13,6 +13,14 @@ skills/streaming-sl-obs/
 # Private orchestrator (PII: session id, monitor screenshots) — local-only
 skills/sentinel/
 
+# Ryan's PERSONAL cognitive architecture — local-only, NEVER publish (PII: his
+# daughter's name appears three times). Generated from his own interview, and it
+# is keyed to the agent name "Sentinel", so it has no function in a public
+# distribution: a user who names their agent anything else resolves default.md.
+# default.md IS published — that is the template the first-run creator copies,
+# and its absence is what made every first run fall back to a stale ryan.md.
+prompts/cognitive-architectures/orchestrator/sentinel.md
+
 # Operator-internal release runbook — local-only, NEVER publish.
 # It names every build-time secret variable, states which conditions leave
 # licence verification disabled, and documents the download kill-switch. No

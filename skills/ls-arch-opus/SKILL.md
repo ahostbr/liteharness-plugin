@@ -35,7 +35,7 @@ Quick-lookup index into the **canonical** architecture docs for the consolidated
 | 13  | 13-AgentsOverflow.md         | Worldwide agent network, daily builds, voting                      |
 | 14  | 14-Self-Improvement.md       | Self-improvement loop, LiteCLI compilation, /train                 |
 
-## Workflow
+## Protocol
 
 1. Read `INDEX.md` for the full table of contents + section lookup table
 2. If the user's question maps to a specific topic, use the Section Lookup to find the right doc and section

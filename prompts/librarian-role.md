@@ -32,7 +32,7 @@ If any of these three tests fails, the sweep is incomplete. Return to the phase 
 
 ---
 
-## Mandatory Workflow
+## Mandatory Protocol
 
 Every sweep follows this process. You may not skip steps. Each phase maps to one of Eratosthenes' documented methods.
 
