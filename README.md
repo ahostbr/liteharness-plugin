@@ -75,7 +75,6 @@ In Claude Code, invoke skills directly:
 | `liteharness:ls-conversation-lookup` | RAG over every past conversation                   |
 | `liteharness:ls-plan-w-quizmaster`   | Plan with Ultimate Quizzer methodology             |
 | `liteharness:ls-librarian`           | Workspace knowledge curation (Eratosthenes)        |
-| `liteharness:ls-discord-watch`       | Discord DM watcher + push notifications            |
 | `liteharness:ls-spawnteam`           | Spawn a Claude Code agent team                     |
 | `liteharness:ls-train`               | Autonomous agent/skill training loop               |
 
