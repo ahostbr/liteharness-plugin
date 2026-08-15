@@ -1,6 +1,6 @@
 {
   "name": "liteharness",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "hooks": "./hooks/codex_hooks.json",
   "description": "Multi-CLI agent orchestration for spawning, messaging, and coordinating AI coding agents across Claude Code, Codex, Copilot, and more.",
   "author": {
