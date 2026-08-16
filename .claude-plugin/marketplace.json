@@ -4,7 +4,7 @@
     "name": "Ryan Devlin",
     "email": "support@litesuite.dev"
   },
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "LiteHarness multi-CLI agent orchestration marketplace",
   "plugins": [
     {
@@ -12,7 +12,7 @@
       "description": "Multi-CLI agent orchestration — spawn, message, and coordinate coding agents across Claude Code, Codex, Copilot, and more. 5-tier hierarchy, inter-agent messaging, 49 polymathic thinking agents.",
       "source": "./",
       "category": "development",
-      "version": "1.0.12",
+      "version": "1.0.13",
       "author": {
         "name": "Ryan Devlin",
         "email": "support@litesuite.dev"
