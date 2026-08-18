@@ -16,6 +16,22 @@ on the 1.0.14 release, which it blocked at 9a8fc31.
 
   baseline order: --baseline REF > @{upstream} > origin/main > HEAD (degraded)
 
+Why this was fixed in code rather than documented in a runbook: the gate's own
+remediation text tells you to run bump_version.py. Under the old HEAD baseline
+that advice publishes a phantom version -- the gate instructing you to corrupt
+the very thing it exists to protect. The only other escape was --no-verify,
+which drops check_pii.py on a PUBLIC repo. A runbook would have had to bless one
+of those two as normal practice. That is a logic defect, not a doc defect.
+
+The comparison is ORDERED, not inequality: the staged version must be GREATER
+than the published one. A downgrade satisfying a "did it change?" check is the
+gate reporting success about the exact event it exists to prevent -- every
+installed cache silently reverts and /plugin update says it worked. Deliberate
+reverts remain possible via --allow-downgrade, which is argv-only BY DESIGN: no
+env var, no config key, no default can supply it, because the entire value of
+the hatch is that a human chose it at the moment of the downgrade. When it is
+used the gate still says so, loudly, naming both versions.
+
 Exit codes: 0 = ok (bumped, or no catalog change), 1 = missing bump.
 """
 import argparse
@@ -49,6 +65,11 @@ def version_in(ref: str) -> str | None:
     return m.group(1) if m else None
 
 
+def _ver(text: str) -> tuple[int, ...]:
+    """1.0.10 > 1.0.9 -- lexically it is not. VERSION_RE guarantees d+.d+.d+."""
+    return tuple(int(part) for part in text.split("."))
+
+
 def _rev_parse(ref: str) -> str | None:
     out = subprocess.run(
         ["git", "rev-parse", "--verify", "--quiet", ref],
@@ -75,6 +96,9 @@ def main() -> int:
     ap.add_argument("--baseline", default=None,
                     help="ref of the last published release "
                          "(default: @{upstream}, else origin/main, else HEAD)")
+    ap.add_argument("--allow-downgrade", action="store_true",
+                    help="permit a version DECREASE; must be typed deliberately "
+                         "(argv only -- no env var or config can supply it)")
     args = ap.parse_args()
     baseline, published = resolve_baseline(args.baseline)
 
@@ -84,6 +108,7 @@ def main() -> int:
         return 0
 
     unbumped = []
+    downgrades = []
     for manifest in RELEASE_MANIFESTS:
         base_v = version_in(f"{baseline}:{manifest}")
         if base_v is None:
@@ -92,6 +117,30 @@ def main() -> int:
         staged_v = version_in(f":{manifest}")  # version in the index
         if staged_v is None or staged_v == base_v:
             unbumped.append((manifest, base_v))
+        elif _ver(staged_v) < _ver(base_v):
+            downgrades.append((manifest, base_v, staged_v))
+
+    if downgrades:
+        listed = "; ".join(
+            f"{m}: {b} -> {st}" for m, b, st in downgrades
+        )
+        if not args.allow_downgrade:
+            sys.stderr.write(
+                "\n[liteharness pre-commit] BLOCKED: version DOWNGRADE.\n"
+                f"  {listed}\n"
+                f"  Baseline {baseline} ({(_rev_parse(baseline) or '?')[:7]}) is "
+                "the last PUBLISHED release.\n\n"
+                "  Publishing a lower version makes every installed cache revert\n"
+                "  to an older catalog, while /plugin update reports success.\n"
+                "  If the revert is deliberate, say so explicitly:\n"
+                "      python scripts/check_version_bump.py --allow-downgrade\n"
+            )
+            return 1
+        sys.stderr.write(
+            "\n[liteharness pre-commit] DOWNGRADE ALLOWED by --allow-downgrade.\n"
+            f"  {listed}\n"
+            "  Every installed cache will revert to the older catalog.\n"
+        )
 
     if not unbumped:
         return 0  # version was bumped — good
