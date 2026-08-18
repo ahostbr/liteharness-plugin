@@ -35,6 +35,7 @@ used the gate still says so, loudly, naming both versions.
 Exit codes: 0 = ok (bumped, or no catalog change), 1 = missing bump.
 """
 import argparse
+import os
 import subprocess
 import sys
 import re
@@ -91,6 +92,33 @@ def resolve_baseline(explicit: str | None) -> tuple[str, bool]:
     return "HEAD", False
 
 
+MARKER_NAME = "ALLOW_DOWNGRADE_ONCE"
+
+
+def read_sanction():
+    """One-shot downgrade marker written by scripts/sanction_downgrade.py.
+
+    Lives in the GIT DIR so it can never be staged, committed or shipped.
+    Returns (from, to, reason, path) or None. Anything malformed returns
+    None -- an unreadable sanction is not a sanction (fail-closed).
+    """
+    git_dir = _git("rev-parse", "--git-dir").strip()
+    if not git_dir:
+        return None
+    path = os.path.join(git_dir, MARKER_NAME)
+    try:
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+    except OSError:
+        return None
+    first = text.splitlines()[0] if text.splitlines() else ''
+    m = re.match(r"\s*(\d+\.\d+\.\d+)\s*->\s*(\d+\.\d+\.\d+)\s*$", first)
+    if not m:
+        return None
+    reason = "\n".join(text.splitlines()[1:]).strip()
+    return m.group(1), m.group(2), reason, path
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--baseline", default=None,
@@ -121,26 +149,53 @@ def main() -> int:
             downgrades.append((manifest, base_v, staged_v))
 
     if downgrades:
-        listed = "; ".join(
-            f"{m}: {b} -> {st}" for m, b, st in downgrades
-        )
-        if not args.allow_downgrade:
+        listed = "; ".join(f"{m}: {b} -> {st}" for m, b, st in downgrades)
+        pairs = sorted({(b, st) for _, b, st in downgrades})
+        sanction = read_sanction()
+        base_sha = (_rev_parse(baseline) or '?')[:7]
+
+        if args.allow_downgrade:
             sys.stderr.write(
-                "\n[liteharness pre-commit] BLOCKED: version DOWNGRADE.\n"
+                "\n[liteharness] DOWNGRADE ALLOWED by --allow-downgrade.\n"
                 f"  {listed}\n"
-                f"  Baseline {baseline} ({(_rev_parse(baseline) or '?')[:7]}) is "
-                "the last PUBLISHED release.\n\n"
-                "  Publishing a lower version makes every installed cache revert\n"
-                "  to an older catalog, while /plugin update reports success.\n"
-                "  If the revert is deliberate, say so explicitly:\n"
-                "      python scripts/check_version_bump.py --allow-downgrade\n"
+                "  Every installed cache will revert to the older catalog.\n"
+            )
+        elif sanction is None:
+            sys.stderr.write(
+                "\n[liteharness pre-commit] BLOCKED: version DOWNGRADE, unsanctioned.\n"
+                f"  {listed}\n"
+                f"  Baseline {baseline} ({base_sha}) is the last PUBLISHED release.\n\n"
+                "  Publishing a lower version makes every installed cache revert to an\n"
+                "  older catalog, while /plugin update reports success.\n\n"
+                "  If this revert is deliberate, authorise this ONE transition:\n"
+                f"      python scripts/sanction_downgrade.py --from {pairs[0][0]} "
+                f"--to {pairs[0][1]} --reason \"...\"\n"
             )
             return 1
-        sys.stderr.write(
-            "\n[liteharness pre-commit] DOWNGRADE ALLOWED by --allow-downgrade.\n"
-            f"  {listed}\n"
-            "  Every installed cache will revert to the older catalog.\n"
-        )
+        elif len(pairs) != 1 or (sanction[0], sanction[1]) != pairs[0]:
+            held = f"{sanction[0]} -> {sanction[1]}"
+            staged = "; ".join(f"{b} -> {st}" for b, st in pairs)
+            sys.stderr.write(
+                "\n[liteharness pre-commit] BLOCKED: the sanction does not match.\n"
+                f"  marker authorises : {held}\n"
+                f"  staged transition : {staged}\n\n"
+                "  A sanction covers ONE transition, not downgrades in general.\n"
+                "  Re-run scripts/sanction_downgrade.py for the pair you mean.\n"
+            )
+            return 1
+        else:
+            try:
+                os.remove(sanction[3])
+                consumed = True
+            except OSError:
+                consumed = False
+            sys.stderr.write(
+                "\n[liteharness pre-commit] DOWNGRADE SANCTIONED and allowed.\n"
+                f"  {listed}\n"
+                f"  reason: {sanction[2]}\n"
+                "  Every installed cache will revert to the older catalog.\n"
+                f"  marker consumed: {consumed} (one-shot; the next downgrade blocks again)\n"
+            )
 
     if not unbumped:
         return 0  # version was bumped — good
