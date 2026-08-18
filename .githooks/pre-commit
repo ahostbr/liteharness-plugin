@@ -4,5 +4,10 @@
 # plugin version — which would freeze the Claude Code CLI cache on the old set.
 # Enabled via: git config core.hooksPath .githooks
 python scripts/check_version_bump.py || exit 1
+# Consistency gate: every version declaration in the repo must AGREE.
+# check_version_bump.py asks "did you bump?"; this asks "do you agree?".
+# Release 1.0.13 passed the first and failed the second -- .codex-plugin
+# stayed at 1.0.12 and shipped that way. Different questions, both needed.
+python scripts/check_version_consistency.py || exit 1
 # Privacy gate: block author machine paths / personal data from entering the public repo.
 python scripts/check_pii.py || exit 1
