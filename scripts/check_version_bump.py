@@ -44,6 +44,9 @@ CATALOG_DIRS = ("skills/", "agents/", "commands/", "hooks/")
 RELEASE_MANIFESTS = (
     ".claude-plugin/plugin.json",
     ".codex-plugin/plugin.json",
+    # Declares the version TWICE. It was omitted here while the BLOCKED message
+    # told you to stage it -- the gate naming a file it did not check.
+    ".claude-plugin/marketplace.json",
 )
 VERSION_RE = re.compile(r'"version"\s*:\s*"(\d+\.\d+\.\d+)"')
 
@@ -59,11 +62,21 @@ def staged_files() -> list[str]:
     return [line.strip() for line in out.splitlines() if line.strip()]
 
 
-def version_in(ref: str) -> str | None:
+def versions_in(ref: str) -> list[str]:
+    """EVERY distinct version declared at `ref`, in file order.
+
+    `search` returns the FIRST match and silently ignores the rest, so a file
+    declaring the version twice reads as bumped when only one site moved -- a
+    fresh instance of the defect this gate exists to catch. Callers must handle
+    len > 1 rather than picking one.
+    """
     # ref like "HEAD:path" or ":path" (staged/index)
     text = _git("show", ref)
-    m = VERSION_RE.search(text)
-    return m.group(1) if m else None
+    seen: list[str] = []
+    for m in VERSION_RE.finditer(text):
+        if m.group(1) not in seen:
+            seen.append(m.group(1))
+    return seen
 
 
 def _ver(text: str) -> tuple[int, ...]:
@@ -137,16 +150,39 @@ def main() -> int:
 
     unbumped = []
     downgrades = []
+    inconsistent = []
     for manifest in RELEASE_MANIFESTS:
-        base_v = version_in(f"{baseline}:{manifest}")
-        if base_v is None:
+        base_vs = versions_in(f"{baseline}:{manifest}")
+        if not base_vs:
             # Manifest absent at the baseline (first commit / new file).
             continue
-        staged_v = version_in(f":{manifest}")  # version in the index
+        # Beat the HIGHEST published declaration: clearing only the lowest would
+        # authorise a version that is already published at another site.
+        base_v = max(base_vs, key=_ver)
+        staged_vs = versions_in(f":{manifest}")  # versions in the index
+        if len(staged_vs) > 1:
+            inconsistent.append((manifest, staged_vs))
+            continue
+        staged_v = staged_vs[0] if staged_vs else None
         if staged_v is None or staged_v == base_v:
             unbumped.append((manifest, base_v))
         elif _ver(staged_v) < _ver(base_v):
             downgrades.append((manifest, base_v, staged_v))
+
+    if inconsistent:
+        sys.stderr.write(
+            "\n[liteharness pre-commit] BLOCKED: a manifest disagrees with itself.\n"
+        )
+        for manifest, found in inconsistent:
+            sys.stderr.write(f"  {manifest} declares {', '.join(found)}\n")
+        sys.stderr.write(
+            "\n  Every declaration in one file must name the same version.\n"
+            "  A partial bump leaves a stale site behind, and a gate that reads\n"
+            "  only the first declaration reports success -- which is how 1.0.13\n"
+            "  shipped with .codex-plugin frozen at 1.0.12.\n"
+            "  Run: python scripts/bump_version.py   (it rewrites every site)\n"
+        )
+        return 1
 
     if downgrades:
         listed = "; ".join(f"{m}: {b} -> {st}" for m, b, st in downgrades)
@@ -218,7 +254,7 @@ def main() -> int:
         "  Plugin caches only rebuild on a version change.\n"
         "  Run this, then re-stage and commit:\n"
         "      python scripts/bump_version.py\n"
-        "      git add .claude-plugin/marketplace.json .claude-plugin/plugin.json .codex-plugin/plugin.json\n\n"
+        f"      git add {' '.join(RELEASE_MANIFESTS)}\n\n"
         "  (Bypass only if you know the cache is unaffected: git commit --no-verify)\n"
     )
     return 1
