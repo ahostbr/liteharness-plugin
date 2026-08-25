@@ -1,6 +1,6 @@
 {
   "name": "liteharness",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "hooks": "./hooks/codex_hooks.json",
   "description": "Multi-CLI agent orchestration for spawning, messaging, and coordinating AI coding agents across Claude Code, Codex, Copilot, and more.",
   "author": {
@@ -29,7 +29,10 @@
     "longDescription": "LiteHarness brings multi-CLI agent orchestration into Codex with shared inbox messaging, deterministic agent identity, polymathic agent workflows, and tools for spawning, discovering, and controlling coding agents across local CLI surfaces.",
     "developerName": "Ryan Devlin",
     "category": "Coding",
-    "capabilities": ["Interactive", "Write"],
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
     "websiteURL": "https://litesuite.dev",
     "privacyPolicyURL": "https://litesuite.dev/privacy",
     "termsOfServiceURL": "https://litesuite.dev/terms",

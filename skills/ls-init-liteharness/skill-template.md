@@ -44,12 +44,24 @@ session that does not exist, while still exiting 0.
 
 ```bash
 python -m liteharness.cli register --agent-id <YOUR-SESSION-ID> --cli claude-code \
-  --model <YOUR-MODEL> --tier orchestrator --name "{{ORCHESTRATOR_NAME}}" --takeover
+  --model <YOUR-MODEL> --tier orchestrator --name "{{ORCHESTRATOR_NAME}}" --takeover \
+  --session-pid <PID-OF-THE-PROCESS-THAT-IS-THIS-SESSION>
 ```
 
 `--takeover` claims the name from a dead ghost holder (stale heartbeat or dead
 `session_pid`), evicting it recoverably. It **refuses** when the holder is genuinely live —
 it never steals from a running agent.
+
+🔴 **`--session-pid` is what makes that refusal true of YOU.** Both the takeover guard and
+the janitor's dead-owner purge read `presence.session_pid`, and **both treat a missing value
+as "already dead"** — so a registration without it is *simultaneously* unreapable by the
+janitor and unprotected against takeover. Measured 2026-08-19: two live probes registered
+without it, and the second took the name from the first while the first was still running.
+
+Pass the pid of the process that **is** the session — not the pid of the shell running this
+command. A CLI-driven agent uses its own `os.getpid()`; an agent started by Claude Code
+already has it written by the `SessionStart` hook, which has always set this field. Only the
+`register` path could omit it, which is why the CLI-registered seats were the ones that broke.
 
 ## Step 3 — Watch your inbox
 
@@ -97,3 +109,33 @@ never promotes itself.
    an agent quoting a measurement are all claims about a file — not the file.
 5. Commit between phases, not in one lump at the end.
 6. Never say "next session." There is only now.
+
+## Where durable knowledge goes
+
+**IT GOES IN GIT. There is no memory file.** Anything worth keeping past this
+session goes to a place the tools already index:
+
+| what you learned | where it goes |
+|---|---|
+| task outcome, root cause, reusable pattern | `lst run pattern action=record …` |
+| why you made this change, what you rejected | the **commit body**, with your trailers |
+| state the next seat needs to continue | your **handoff** |
+
+Recall is `git log`, the architecture docs, and the code. Those are the sources of
+truth; anything else is a claim about them.
+
+**Never write `CLAUDE.md` or `docs/architecture/**`.** `CLAUDE.md` is human-gated,
+and the architecture docs are generated from verified patterns — writing them by
+hand overwrites the output of a process nobody asked you to replace.
+
+### Two rules that graduate a record from noise
+
+**HANDOFF ROWS ARE CHECKABLE OR THEY ARE NOISE.** Every row names a SHA, a SYMBOL,
+or a re-runnable QUERY — never a bare state. *A query can be re-run; a count can
+only be believed.*
+
+**NOTHING IS DONE UNTIL A HUMAN HAS SEEN IT WORK.** Every recorded outcome is born
+unverified; `record` has no level flag at all. Delegated judgement and
+gauntlet/HITL-off runs are NOT exceptions to that — they are **attestations you
+append afterwards**, each citing its authorization (the delegation ref, the run
+id). Never record DONE, finished, or working as a fact.

@@ -1,7 +1,7 @@
 {
   "name": "liteharness",
   "description": "Multi-CLI agent orchestration — spawn, message, and coordinate AI coding agents across Claude Code, Codex, Copilot, and more from a single harness. 5-tier hierarchy, inter-agent messaging, polymathic thinking agents, git-as-memory.",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "author": {
     "name": "Ryan Devlin",
     "url": "https://litesuite.dev"
