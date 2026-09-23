@@ -375,6 +375,8 @@ When running inside LiteSuite (detected via `LITESUITE_BRIDGE_TOKEN` env var), y
 
 **Agent Lifecycle (via `liteharness` CLI — bootloader channel):**
 
+For repeated read-only local-model judgments (branch census, dossiers, evidence triage), use `skills/ls-local-batch-agent/SKILL.md` to launch isolated LiteTUI batch seats; check resident VRAM state and Sentinel approval before any model load.
+
 Process-level operations that create, destroy, and control agent sessions. `liteharness` owns anything that manages agent processes.
 
 | Command                                                 | Purpose                         |
@@ -444,7 +446,7 @@ Core invariant before closing any issue: you always compare the PR/implementatio
 - confirm every task in the plan is completed when a plan exists,
 - confirm nothing was silently added, dropped, or substituted,
 - confirm discovered work is filed as linked follow-up issues instead of hidden inside the PR,
-- confirm mandatory validation evidence exists: E2E Playwright tests pass with `--bail=1`, the project's configured typecheck command passes, and the project's configured lint command passes,
+- confirm mandatory validation evidence exists: E2E tests pass using the project's configured fail-fast E2E command, the project's configured typecheck command passes, and the project's configured lint command passes,
 - confirm review verdicts and validation evidence support closure.
 
 If the PR fails this comparison, do not close the issue. Route REQUEST-CHANGES, open follow-up issues, descope explicitly in a GitHub comment, or escalate according to HITL mode.
@@ -540,14 +542,16 @@ Mandatory closure gates are non-negotiable stop codons before any PR or issue cl
 
 - The project's configured typecheck command passes.
 - The project's configured lint command passes.
-- E2E Playwright regression passes with `--bail=1` against a live dev server.
+- E2E regression passes using the project's configured fail-fast E2E command against a live dev server.
+
+Here in LiteSuite, run `npx playwright test`: `playwright.config.ts` sets `maxFailures: 1`. The Playwright CLI spelling is `--max-failures=1`; Playwright has no `--bail` flag, and `bail` is not a config key. Use the project's configured command rather than assuming another runner's flags apply.
 
 The E2E gate is not "run the test suite in isolation." It is: start the dev server, wait for it to be healthy, run the full Playwright suite against the running app, verify the feature or fix actually works end-to-end. If the app cannot start, the gate fails. If the feature doesn't work in the browser, the gate fails. Static analysis and unit tests are necessary but not sufficient — the app must demonstrably work.
 
 During the review phase (Phase 5), after polymathic code review and before merge approval, the reviewer or a dedicated validator agent must:
 
 1. Start the dev server (`bun run dev` or equivalent)
-2. Run `bunx playwright test --bail=1` against the running app
+2. Run the project's configured fail-fast E2E command against the running app (here: `npx playwright test`)
 3. Verify the specific feature/fix from the PR works (not just pre-existing tests)
 4. Capture evidence (test output, screenshots if available)
 5. Include E2E evidence in the merge request summary

@@ -28,7 +28,7 @@ Modeled originally on `robonuggets/gauntlet-loop`; its blind critics are rejecte
 
 ## The canonical flow (Ryan's diagram, 2026-08-22 — the authority)
 
-`C:/Projects/docs/plans/2026-08-22-gauntlet-loop/ryan-flowchart.png` — *"thats how this should work in a nutshell."* Two nested gauntlets, four exits:
+`<projects>/docs/plans/2026-08-22-gauntlet-loop/ryan-flowchart.png` — *"thats how this should work in a nutshell."* Two nested gauntlets, four exits:
 
 ```
 goal + examples + rules -> figure out what GREAT actually looks like    <- re-plan re-entry
@@ -324,7 +324,7 @@ The `litesuite-tools` registry holds **36 tools** (count derived from `NAME` exp
 | **Collective memory (`pattern`)** | **ADOPT — mandatory** | Before round one: `lst run pattern action=query query="<goal>"` — a run that skips this starts amnesiac. After every round: `action=record` the builder approach + critic angle + outcome, with `supersedes=` when a later round retires an earlier finding (supersession must be written at record time — it cannot be reconstructed from timestamps). A 34-hour grind's most valuable output is which approaches beat the bar. |
 | **Multi-model critics** | **ADOPT** | `liteharness spawn --model <m>` (flag verified in the spawn parser) — a critic on a DIFFERENT model is structurally more independent than fresh-context-same-model. Spawn at least one critic seat on another provider when the run is long enough to matter. |
 | **LiteBench arena as the judge** | **ADOPT as optional mode** | When the artifact is a game/web build and LiteBench is installed: report completion the arena way — `liteharness send litebench-arena "BENCH_COMPLETE competitor=<tag> …"` — and let human-pick → ELO judge (`LiteBench/src/main/engine/{litebench-inbox,cli-competitor-runner,battle-orchestrator}.ts`). ELO is comparative, never self-graded, which is this skill's own score-drift objection solved by an existing system. |
-| **Bar fetchers, named** | **ADOPT** | Page bars: `browser` tool `screenshot` action (`agent-bridge.ts:469` route, `:1002` case) — both sides at the SAME viewport. Footage bars: `youtube` tool / `/ls-youtube-transcript` for the reference title. Repo bars: clone and run the named repo's suite. The fetcher named per bar is what keeps "fetchable" from decaying into prose. |
+| **Bar fetchers, named** | **ADOPT** | Page bars: `browser` tool `screenshot` action (`agent-bridge.ts:469` route, `:1002` case) — both sides at the SAME viewport. Footage bars: `youtube` tool / `/ls-youtube` for the reference title. Repo bars: clone and run the named repo's suite. The fetcher named per bar is what keeps "fetchable" from decaying into prose. |
 | **HITL by name (`halt`)** | **ADOPT** | "The human pulls the plug" has a tool: `lst run halt` (`halt`/`resume`/`status`). The lead checks `status` between rounds; a `halt` is the human gate closing mid-grind, distinct from `/goal` clearing. |
 | **Compression (`lens`)** | **ADOPT** | Critic analyses are long; pipe them through `lens` (`tools/lens.py:7`, local-model summarisation) before they enter the lead's context. Verdict + biggest gap travel whole; the analysis travels summarised. |
 | **Voice on gate-clear** | **ADOPT** | `POST http://127.0.0.1:7438/v1/tts/speak` (`voice/api-server.ts:435`) — one sentence when the gate clears or a `halt` lands. Fire-and-forget by contract. |
@@ -336,7 +336,7 @@ The `litesuite-tools` registry holds **36 tools** (count derived from `NAME` exp
 
 Branching, trailers, worker/leader commit discipline, and the kanban contract are DOCTRINE — `prompts/bootstrap-harness.md` + `prompts/protocols/github-issue-protocol.md`. Follow them; do not re-learn them from this file. What stays inline is only what ships nowhere else:
 
-- **Structure.** Apps live at `C:\Projects\<app>`; scripts → `<root>/scripts`; E2E + artifacts → `<root>/e2e/` (always `--max-failures=1`; Playwright has no `--bail`); temp → the session scratchpad, never `/tmp` (a POSIX path handed to a Windows writer forks the file into `C:\tmp` while reporting success). `pnpm` everywhere except LiteSuite/LiteEditor (Bun). `python`, never `python3`.
+- **Structure.** Apps live at `<projects>/<app>`; scripts → `<root>/scripts`; E2E + artifacts → `<root>/e2e/` (always `--max-failures=1`; Playwright has no `--bail`); temp → the session scratchpad, never `/tmp` (a POSIX path handed to a Windows writer forks the file into `C:\tmp` while reporting success). `pnpm` everywhere except LiteSuite/LiteEditor (Bun). `python`, never `python3`.
 - **The human gate — RESCINDED FOR PUSHES (ruling 2026-08-24).** Commit and push freely and often; do not ask. ⚠️ Still true as a FACT rather than a gate: a site that **deploys on push** turns a push into a deploy — know what you are shipping. HITL survives for genuinely irreversible, outward-facing actions, which a push to a private repo is not.
 - **Worktrees.** Parallel builders get isolated worktrees under `<root>\.worktrees\`. 🔴 **Before ANY worktree removal, scan for junctions** — `git worktree remove --force` FOLLOWS Windows junctions and has already destroyed 264 GB of models here. This workspace junctions `bin/`, `node_modules/`, `lite-ui` into worktrees BY DESIGN, and a suspiciously small worktree is a junction tell. A refused non-force remove is a warning to investigate, never a license to escalate:
   ```powershell
