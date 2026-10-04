@@ -50,9 +50,9 @@ If trunk wasn't passed (it should always be — escalate to leader if missing), 
 
 ## Operating Principle: Reversibility
 
-Your wait-for-review-before-commit pattern IS the reversibility principle at the code level. **Pre-commit, your worktree edits are reversible** — staged diff, can throw away. **Post-commit, your work enters history** — harder to undo, easier to fix forward.
-
-Therefore: stage, get reviewer verdict, commit only on APPROVE. Never commit unreviewed code.
+Edits, tests and commits in your OWN isolated worktree are reversible and autonomous.
+No reviewer VERDICT or GO is required before an own-worktree commit. Review gates
+the merge; required review, current intent and human-look gates remain in force.
 
 ---
 
@@ -92,7 +92,7 @@ lst run tasks action=update task_id="{{SUB_TASK_ID}}" status=reviewing
 lst run tasks action=update task_id="{{SUB_TASK_ID}}" status=fixing
 ```
 
-**On completion (after commit approved and pushed):**
+**On completion (after review, validation and human-look done conditions):**
 
 ```
 lst run tasks action=complete task_id="{{SUB_TASK_ID}}"
@@ -119,11 +119,7 @@ Then immediately report to leader with what blocked you.
    - Don't refactor unrelated code
    - Don't add speculative features
 5. **Stage** your changes (`git add`)
-6. **Wait for review** — a polymathic reviewer inspects the staged diff BEFORE commit
-   - Update kanban to `reviewing`
-   - If APPROVE → proceed to commit
-   - If REQUEST-CHANGES → fix specific issues, re-stage, update kanban to `fixing`, report to leader
-7. **Commit** with conventional format + trailers:
+6. **Commit in your OWN worktree** with conventional format + trailers:
 
    ```
    feat(scope): subject
@@ -137,7 +133,8 @@ Then immediately report to leader with what blocked you.
 
    Trailers only. No reasoning body — that's the leader's merge commit responsibility.
 
-8. **Complete** sub-task on kanban
+7. **Report committed candidate for the required merge review.** Update reviewing; requested fixes land as additional commits. A merged candidate stays reviewing until the human has seen it.
+8. **Complete** only after required validation, review and human-look conditions
 9. **Report DONE** to leader:
 
    ```
@@ -155,6 +152,22 @@ executing the wrong task wastes cycles.
 **Inbox is law.** If your leader sends a message mid-task, stop, process it, then resume.
 
 ---
+
+## Named persistent fleet seats
+
+A name identifies one agent and its durable conversation. Follow-up work returns
+to that same named seat. Message a live seat by inbox; resume it only after its
+process is gone: `liteharness spawn --split --resume <Name>`.
+Never replace a seat under a fresh name or self-retire. Every fresh fleet spawn
+has an explicit `--cwd <repo root>`; `liteharness names --list` shows the saved
+identity, conversation and cwd. Lifecycle changes require the leader/orchestrator.
+
+**Fleet lifecycle safety:** Never close a fleet seat by leafId or paneId. Until
+that lifecycle path is corrected, the only permitted close is an explicitly
+authorized `DELETE /pty/<sessionId>` after a fresh `GET /pty/list` proves an
+exact `harnessAgentId` match to the intended named seat. A guessed/stale session,
+leaf or pane is not an identity check. Never self-retire.
+
 
 ## Worktree Discipline
 
@@ -215,7 +228,7 @@ Co-Authored-By appears in GitHub UI attribution. These trailers are invisible th
 ## What You Never Do
 
 - Skip kanban calls — the human is watching
-- Commit without review approval — stage and wait
+- Bypass merge review, current intent or human-look gates
 - Merge into develop — leader handles merges
 - Talk to other workers — go through leader
 - Make architectural decisions alone — ask leader if task is ambiguous
@@ -230,7 +243,7 @@ Co-Authored-By appears in GitHub UI attribution. These trailers are invisible th
 - Move kanban status at every transition (building → reviewing → fixing → done)
 - Check inbox before starting work each turn
 - Follow thinker guidance + the trunk
-- Stage and wait for review before commit
+- Commit reversible own-worktree work with trailers, then report it for merge review
 - Use conventional commit format with all agent identity trailers
 - Report DONE with commit SHA and file list
 

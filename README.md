@@ -1,21 +1,21 @@
-# LiteHarness Plugin — Multi-CLI Agent Orchestration for Claude Code
+# LiteHarness Plugin — Claude Code and Codex surfaces
 
 Native **Claude Code marketplace plugin** delivering the LiteHarness skills + agents catalog: 60+ skills, 91 agents (49 polymathic thinkers), and 27 hooks. Spawn, coordinate, and review AI coding agents across **Claude Code, Codex, Copilot, Pi, Kilo, OpenCode** — all from one harness.
 
-## Two-flavor delivery — Claude vs. everything else
+## Shared native payload and separate Python delivery
 
 LiteHarness ships in two repos that work together, not duplicates:
 
 | Repo                                                                                        | What it is                                                                                                                                                                    | Install command                                                                                 |
 | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | **[ahostbr/liteharness-plugin](https://github.com/ahostbr/liteharness-plugin)** (this repo) | Native Claude Code marketplace plugin — same skills + agents catalog, delivered via Claude's plugin system                                                                    | `/plugin marketplace add ahostbr/liteharness-plugin && /plugin install liteharness@liteharness` |
-| **[ahostbr/liteharness](https://github.com/ahostbr/liteharness)**                           | Python runtime engine + universal installer for **all CLIs without a native plugin system** (Codex, Copilot, Pi, OpenCode, Gemini, Cursor, Continue, Antigravity, Crush, ...) | `pip install liteharness`                                                                       |
+| **[ahostbr/liteharness](https://github.com/ahostbr/liteharness)**                           | Python runtime engine + universal installer for opt-in catalog installation across supported CLIs | `pip install liteharness`                                                                       |
 
-The skills + agents catalog is **the same content** — only the delivery mechanism differs. Claude users get this plugin (native). Every other CLI installs the catalog via the `liteharness` pip package's universal installer (opt-in per CLI through the LiteSuite setup wizard).
+Claude and Codex native manifests refer to this shared repository payload. The Python package is a separately versioned runtime/catalog and may contain held or ahead skills; do not assume byte-for-byte parity. Codex has `.codex-plugin/plugin.json` and `.agents/plugins/marketplace.json`; marketplace publication/synchronization needs its own source-ref evidence. A local manifest does not prove remote sync. Claude Mods, when present, are Claude-only; Codex does not gain that runtime from a shared directory. A plugin update does not install the companion Python telemetry reader.
 
 ## What You Get
 
-- **60+ skills** under `liteharness:ls-*` namespace — arch, debug, sentinel, vault, conversation-lookup, plan-w-quizmaster, librarian, and more
+- **60+ skills** under `liteharness:ls-*` namespace — arch, debug, ls-sentinel (legacy slug), vault, conversation-lookup, plan-w-quizmaster, librarian, and more
 - **91 agents** — 49 polymathic thinkers (Feynman, Carmack, Shannon, Linus, Lovelace, etc.), 14 thinker lenses, 9 pentest analysts, 9 PRD-workflow agents, 5 specialists, plus meta/mp/test agents
 - **27 hooks** — SessionStart registration, PostToolUse inbox polling, lifecycle events
 - **Multi-CLI orchestration** — see and control agents across every major coding CLI
@@ -41,7 +41,7 @@ Both are required: this plugin provides the skills + agents Claude sees, while `
 
 ```bash
 # Spawn a background agent
-liteharness spawn --pty --model sonnet --name "Worker" --prompt "fix the flaky test"
+liteharness spawn --pty --cwd <repo-root> --tier worker --model <chosen-model> --name "Worker" --prompt "fix the flaky test"
 
 # See who's online
 liteharness discover
@@ -56,7 +56,7 @@ liteharness check
 In Claude Code, invoke skills directly:
 
 ```
-/sentinel load                      # Reload state after compaction
+/ls-init-liteharness                # Choose your orchestrator name and interview
 /arch                               # Load canonical architecture index
 /library list                       # List the full skill+agent catalog
 /plan-w-quizmaster <task>           # Structured planning with quizmaster
@@ -104,13 +104,13 @@ that cache when the version string changes.** Codex plugin installs also use the
 cache freezes and the CLI keeps serving the OLD catalog forever (the classic "my
 renamed skills still show the old names" bug).
 
-So the rule is: **any catalog change → bump the version.**
+Release preparation requires a version bump for catalog changes. Reversible candidate commits are not release authorization: the release owner bumps after review/intent gates. Never push a candidate or bypass active hooks; report a local commit/version-gate conflict to the leader.
 
 ```bash
 python scripts/bump_version.py          # patch (default): 1.0.1 -> 1.0.2
 python scripts/bump_version.py minor    # 1.0.1 -> 1.1.0
 python scripts/bump_version.py --set 2.0.0
-git add -A && git commit && git push
+# Release owner stages the reviewed files, commits and pushes only after final release GO
 ```
 
 `scripts/bump_version.py` updates `.claude-plugin/marketplace.json`,
@@ -131,7 +131,7 @@ bump blocks the commit. Enable the hook once per clone:
 git config core.hooksPath .githooks
 ```
 
-(Bypass only when you're certain the cache is unaffected: `git commit --no-verify`.)
+Do not bypass active privacy/version hooks. Report a blocked candidate commit; the release owner resolves the gate explicitly.
 
 ## Requirements
 

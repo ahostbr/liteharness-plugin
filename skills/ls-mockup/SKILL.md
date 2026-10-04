@@ -415,11 +415,11 @@ const ForceGraph3D = dynamic(() => import("react-force-graph-3d"), { ssr: false 
 
 const graphData = {
   nodes: [
-    { id: "sentinel", name: "Sentinel", group: "orchestrator", val: 20 },
+    { id: "orchestrator", name: "Orchestrator", group: "orchestrator", val: 20 },
     { id: "worker-1", name: "Worker", group: "worker", val: 10 },
   ],
   links: [
-    { source: "sentinel", target: "worker-1", value: 1 },
+    { source: "orchestrator", target: "worker-1", value: 1 },
   ],
 };
 
@@ -588,7 +588,7 @@ on disk** — deliberately, not a socket:
 ## The loop
 
 ```
-agent writes page  ->  Ryan answers in the browser
+agent writes page  ->  the user answers in the browser
                             |
                             v
          POST /api/mockup-session?id=<mockupId>
@@ -622,7 +622,7 @@ export default function Page() {
 
   return (
     <main>
-      <SessionBanner session={session} title="Wired to Sentinel" />
+      <SessionBanner session={session} title="Wired to Orchestrator" />
 
       <AskChoice session={session} promptId="direction"
         title="Which direction?"
@@ -771,7 +771,7 @@ that needed it.
    sentence of why, rendered beside the control (a quiet block above the `AskChoice`, not inside
    the options). Counsel, not a default: the control is never pre-selected. A page of naked
    choices makes the human do the analysis you already did; the point of the page is that they
-   read your reasoning and override it where they know better. (Ryan, 2026-09-05: "your
+   read your reasoning and override it where they know better. (the user, 2026-09-05: "your
    recommendations … to the skill req and this page".)
 8. **Every question section carries its own free-text box.** One `AskText` per `AskChoice` (or
    per checklist), `promptId` `<question>-note`, two or three rows, optional — so the human can

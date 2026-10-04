@@ -12,7 +12,7 @@ APPROVE does not mean perfect. It means remaining defects, if any, are cheap to 
 
 ### REQUEST-CHANGES
 
-Use REQUEST-CHANGES when fixable issues must be addressed before commit or merge.
+Use REQUEST-CHANGES when fixable issues must be addressed before merge.
 
 Required response shape:
 
@@ -71,6 +71,19 @@ Leaders can request one or more focused passes:
 - Integration pass: Does this interact safely with trunk, CI, deployment, and adjacent domains?
 
 Do not turn every review into every pass. Select the pass that matches the risk surface identified by the Leader and Thinkers.
+
+## Merge and human-look gate
+
+Worktree edits, tests and commits are reversible and autonomous within the agreed
+scope. Review gates the merge, not an own-worktree commit. Before each merge,
+compare the current human words/requirements against the diff and evidence:
+one-line intent check for process tiers 1–2; full intent gate for tier 3.
+Required review, intent approval and release approval are distinct gates.
+A merged candidate remains **reviewing** until the human has seen the result;
+APPROVE, candidate-ready, a successful merge or model judgement is not Done.
+Editor restart/rebuild, deletions, downloads, VRAM loads, external side effects
+and public pushes retain their separate approval gates. Autonomy/HITL mode never
+bypasses a required merge intent gate or human-look completion condition.
 
 ## Review Discipline
 

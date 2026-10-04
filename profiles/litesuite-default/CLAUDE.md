@@ -12,8 +12,8 @@ workflow, and trunk. Read it before any other action.
 
 ## Package Manager
 
-- LiteSuite repo (`C:/Projects/LiteSuite`): **Bun** (`bun install`, `bun run`, `bun build`)
-- All other `C:/Projects/*` repos: **pnpm**
+- LiteSuite repo (`<projects-root>/LiteSuite`): **Bun** (`bun install`, `bun run`, `bun build`)
+- All other `<projects-root>/*` repos: **pnpm**
 - Python: `python` (not `python3`) on Windows
 
 ## LiteSuiteTools — Canonical Tool Runtime

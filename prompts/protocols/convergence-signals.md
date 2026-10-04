@@ -59,6 +59,7 @@ Do not keep dispatching new work into an expanding mission without an explicit c
 The Orchestrator may declare mission complete only when:
 
 - all required stop codons pass,
+- the human has seen the result (merged candidates remain reviewing until then),
 - signal-absence indicates closure outruns discovery,
 - deployment gate is satisfied,
 - no BLOCK verdict remains unresolved,

@@ -82,7 +82,7 @@ Read the file `.claude/consult-config.json` to get the model panel configuration
 }
 ```
 
-> **Note.** Ryan, 2026-09-10: *"i only want claude / codex / lmstudio or our litesuite
+> **Note.** the user, 2026-09-10: *"i only want claude / codex / lmstudio or our litesuite
 > lamma.cpp and everything but claude can go threw litetui now."* The shipped panel is
 > Claude through the CLI (your subscription) plus everything else through a headless
 > LiteTUI child. There are no HTTP provider entries and no API keys: `cliproxy`,
@@ -125,7 +125,7 @@ HTTP: `"type": "cli"` and `"type": "litetui"` each have their own invocation pat
 
 ### The loading rule for `litetui` models (read this before Step 4)
 
-**A consult NEVER causes a model to be loaded into VRAM.** Ryan, 2026-09-10, after a
+**A consult NEVER causes a model to be loaded into VRAM.** the user, 2026-09-10, after a
 seat's probe put a second 27B beside the one he was running: *"no model is loaded into
 VRAM without first confirming none is loaded and getting explicit approval."*
 

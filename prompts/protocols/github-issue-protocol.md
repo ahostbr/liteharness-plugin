@@ -31,9 +31,9 @@ backlog -> todo -> in_progress -> in_review -> done
 
 ## Mandatory Stop Codons
 
-These gates are non-negotiable before any Worker declares DONE, any Reviewer returns APPROVE, or any Leader/Orchestrator closes a PR or issue:
+These validation gates are non-negotiable before any Reviewer returns APPROVE or any Worker/Leader/Orchestrator declares completion. Required review and current intent approval precede merge; a merged candidate remains reviewing until the human has seen it, before DONE or issue/PR closure:
 
-- E2E Playwright tests pass with `--bail=1`.
+- Affected E2E tests pass using the project's configured fail-fast command.
 - The project's configured typecheck command passes.
 - The project's configured lint command passes.
 

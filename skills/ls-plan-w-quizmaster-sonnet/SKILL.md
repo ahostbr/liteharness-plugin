@@ -40,7 +40,7 @@ python -m liteharness.cli send <AGENT-UUID> "question" --from <YOUR-UUID>
 
 ### Channel 2: UIAutomation (AskUserQuestion Prompts)
 
-When the Developer agent runs a Quizmaster skill internally (e.g., `/plan-w-quizmaster`), it will present **AskUserQuestion** prompts in its terminal. These are interactive selection UIs that require keyboard input — NOT inbox messages. Sentinel must:
+When the Developer agent runs a Quizmaster skill internally (e.g., `/plan-w-quizmaster`), it will present **AskUserQuestion** prompts in its terminal. These are interactive selection UIs that require keyboard input — NOT inbox messages. Orchestrator must:
 
 1. **Detect** when a question appears via terminal buffer reading
 2. **Answer** by sending keyboard input to navigate and select options
@@ -77,7 +77,7 @@ python -m liteharness.cli spawn --headed --model <opus|sonnet> --name "DevPlanne
 
 ### After Spawn
 
-1. Wait for the agent's inbox ping (it will message Sentinel when ready)
+1. Wait for the agent's inbox ping (it will message Orchestrator when ready)
 2. Note the agent ID from the inbox notification
 3. **Find the WT pane handle** for UIAutomation:
    ```bash

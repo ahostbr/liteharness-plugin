@@ -21,7 +21,7 @@ prompts:
     tier: T1
     group: role
     file: orchestrator-role.md
-    description: "Orchestrator agent role — coordination, tools, protocol, Ryan's cognitive architecture"
+    description: "Orchestrator agent role — coordination, tools, protocol, user-selected cognitive architecture"
 
   - id: leader-preamble
     tier: T2

@@ -1,6 +1,6 @@
 ---
 name: ls-generative-ui
-description: "LiteSuite Generative UI — render interactive widgets inline in Frontier Chat / Sentinel Chat. Use prompt_widget when you need the user's input to continue (confirmations, forms, picks). Use render_widget for fire-and-forget displays (charts, stat cards, dashboards). Triggers on 'render widget', 'prompt widget', 'ls-generative-ui', 'show me a chart', 'ask the user', 'confirm before', 'show a form', or whenever a visual or interactive answer is clearer than prose."
+description: "LiteSuite Generative UI — render interactive widgets inline in Frontier Chat / Orchestrator Chat. Use prompt_widget when you need the user's input to continue (confirmations, forms, picks). Use render_widget for fire-and-forget displays (charts, stat cards, dashboards). Triggers on 'render widget', 'prompt widget', 'ls-generative-ui', 'show me a chart', 'ask the user', 'confirm before', 'show a form', or whenever a visual or interactive answer is clearer than prose."
 ---
 
 # Generative UI
@@ -28,7 +28,7 @@ When calling `prompt_widget`, you MUST provide:
 
 - `type` — `"catalog"` | `"html"` | `"specs"`
 - `requestId` — unique identifier per call. Generate `"widget-{8 random hex chars}"` (e.g. `"widget-7f3a9e2c"`). **Must be unique per call.**
-- `agentId` — your agent identifier (session UUID or `"sentinel-chat"` if unknown)
+- `agentId` — your registered agent identifier; never invent a private actor default
 - `timeout` — optional; auto-expire after N milliseconds. Omit to wait indefinitely.
 
 Plus the band-specific fields below.
