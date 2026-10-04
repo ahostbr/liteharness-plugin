@@ -1,8 +1,8 @@
 """Strict same-release pin tests against the authorized immutable OSS Git source.
 
 Set LITEHARNESS_TEST_POLICY_REPO to a local clone containing the corrected
-93148ae69e8b8a28334f075c4b1fcdd7c1ce79ff freeze, parent
-23ceb4368e6c1e4c47dfc3b70a0b4793ed86b82e. The shared conftest fixture checks
+351dd25383461ee0d118d5a4d241e35412ac7ecb freeze, parent
+9940abe59abb643c6d3181171c9c898e2eef51d7. The shared conftest fixture checks
 actual canonical bytes and hashes. No installation or wheel execution occurs.
 """
 import importlib.metadata

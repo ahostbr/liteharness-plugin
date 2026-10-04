@@ -33,22 +33,15 @@ policy objects and unverified bytecode caches. Only `None` means no floor refusa
 malformed results, including falsey objects, fail closed.
 
 This candidate accepts package version **0.4.4** and these LF-normalized source
-SHA256s from authorized corrected OSS freeze
-**93148ae69e8b8a28334f075c4b1fcdd7c1ce79ff** (parent
-**23ceb4368e6c1e4c47dfc3b70a0b4793ed86b82e**). The immutable Git packet was
-verified locally: its only changed path is `pyproject.toml`, with version 0.4.4.
-Both wheel policy members are byte-identical to the freeze and corrected parent.
-This update is coordinated with T0313, not an independent release or installation.
-The wheel SHA256 was **remeasured from its raw ZIP bytes**:
-`5494844632d7a5b2f6901c284685d96bb240e2f28f96e5a0b7f6884531c76769`.
-METADATA declares 0.4.4, all 509 RECORD members verify, and the wheel and provenance
-match the immutable Suite packet **0d1754c248d61115c20dced37202cddd7bfd6ed8**.
-No wheel installation or execution was used for this verification. Prior freezes,
-wheels, and provisional pins are superseded; version alone never authorizes them.
-The known source hashes are:
+SHA256s from the reviewed identity-portable source snapshot
+**9940abe59abb643c6d3181171c9c898e2eef51d7**, carried unchanged in the release
+version commit **351dd25383461ee0d118d5a4d241e35412ac7ecb**. The version commit
+also refreshes the catalog bridge pin and provenance; it is not a version-only
+freeze. Exact wheel bytes and bundled-Suite parity must be verified from the
+new build; historical T0313 wheel receipts below do not certify this artifact.
 
 - `deny_gate.py`: `15e98aea4ac8154d028aadc2e375e18892d202a95794b9fbe82ef59706d3cd79`
-- `deny_floor.py`: `063f2197eaca6ab765a7dbf384db76a6ab33b9175b70f611645f9c510f259f47`
+- `deny_floor.py`: `7703738d2d6b1919a440e45543b4016e099eb8b136ef939a7014cfe07315d60e`
 
 Different/missing sources fail closed; a future floor release requires an
 explicitly reviewed compatibility update. Existing Python hooks are **not
