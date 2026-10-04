@@ -44,7 +44,7 @@ bundled-Suite parity must be verified from the new build; historical T0313
 wheel receipts below do not certify this artifact.
 
 - `deny_gate.py`: `15e98aea4ac8154d028aadc2e375e18892d202a95794b9fbe82ef59706d3cd79`
-- `deny_floor.py`: `7703738d2d6b1919a440e45543b4016e099eb8b136ef939a7014cfe07315d60e`
+- `deny_floor.py`: `c60d0fee461c3a4bfcfae928c624e4c64ffbbefc7a5d9103851f03fb22704046`
 
 Different/missing sources fail closed; a future floor release requires an
 explicitly reviewed compatibility update. Existing Python hooks are **not

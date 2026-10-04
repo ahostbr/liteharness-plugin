@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 
-RELEASE_COMMIT = '21369da5521b8d7888ca9507da7eca5455ef2a8f'
-RELEASE_PARENT = '351dd25383461ee0d118d5a4d241e35412ac7ecb'
+RELEASE_COMMIT = 'd3ba9a8f59fb7b10279be54980f2385d193273d1'
+RELEASE_PARENT = '1ea9c5ab9e293da09dceb78bf3ac51bfe5a74f4c'
 EXPECTED = {
     'deny_gate.py': '15e98aea4ac8154d028aadc2e375e18892d202a95794b9fbe82ef59706d3cd79',
-    'deny_floor.py': '7703738d2d6b1919a440e45543b4016e099eb8b136ef939a7014cfe07315d60e',
+    'deny_floor.py': 'c60d0fee461c3a4bfcfae928c624e4c64ffbbefc7a5d9103851f03fb22704046',
 }
 
 
