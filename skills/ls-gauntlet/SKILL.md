@@ -28,7 +28,7 @@ Modeled originally on `robonuggets/gauntlet-loop`; its blind critics are rejecte
 
 ## The canonical flow (the user's diagram, 2026-08-22 — the authority)
 
-`<projects>/docs/plans/2026-08-22-gauntlet-loop/workflow-flowchart.png` — *"thats how this should work in a nutshell."* Two nested gauntlets, four exits:
+The flow is reproduced below so it does not depend on a local diagram file. Two nested gauntlets, four exits:
 
 ```
 goal + examples + rules -> figure out what GREAT actually looks like    <- re-plan re-entry

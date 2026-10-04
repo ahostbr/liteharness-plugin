@@ -37,8 +37,11 @@ SHA256s from the reviewed identity-portable source snapshot
 **9940abe59abb643c6d3181171c9c898e2eef51d7**, carried unchanged in the release
 version commit **351dd25383461ee0d118d5a4d241e35412ac7ecb**. The version commit
 also refreshes the catalog bridge pin and provenance; it is not a version-only
-freeze. Exact wheel bytes and bundled-Suite parity must be verified from the
-new build; historical T0313 wheel receipts below do not certify this artifact.
+freeze. The release payload reconciliation commit
+**21369da5521b8d7888ca9507da7eca5455ef2a8f** carries those policy bytes unchanged
+and corrects tracked-content catalog provenance. Exact wheel bytes and
+bundled-Suite parity must be verified from the new build; historical T0313
+wheel receipts below do not certify this artifact.
 
 - `deny_gate.py`: `15e98aea4ac8154d028aadc2e375e18892d202a95794b9fbe82ef59706d3cd79`
 - `deny_floor.py`: `7703738d2d6b1919a440e45543b4016e099eb8b136ef939a7014cfe07315d60e`

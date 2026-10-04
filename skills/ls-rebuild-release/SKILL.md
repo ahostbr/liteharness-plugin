@@ -55,7 +55,7 @@ done
 
 ### 3. Update manifest.json
 
-Edit `<projects-root>/litesuite.dev\public\manifest.json`:
+Edit `<projects-root>/litesuite.dev/public/manifest.json`:
 
 - Update `updatedAt` to today's date
 - For each app with a new zip:

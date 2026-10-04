@@ -53,6 +53,13 @@ curl -X POST http://127.0.0.1:7423/canvas/split \
   -H "Content-Type: application/json" \
   -d '{"paneId": "'$LITESUITE_PANE_ID'", "direction": "vertical"}'
 # Returns: { ok: true, newLeafId: "abc", newSessionId: "pty-5-..." }
+# "side": "left"|"right"|"top"|"bottom" instead of direction puts the new leaf on
+# that side of yours; "size": 33 gives it 33% of the split; "cwd" starts it there.
+# You in the centre, two agents each side (T906):
+#   split you left size 33.3 -> L1;  split you right size 50 -> R1
+#   split L1 bottom -> L2;           split R1 bottom -> R2
+# Move an existing leaf: POST /canvas/move-leaf {leafId, targetLeafId, mode}
+#   mode left|right|top|bottom|tabs|swap; leaf ids from GET /canvas/leaves?paneId=
 
 # Send command to the new PTY
 curl -X POST http://127.0.0.1:7423/pty/talk \
@@ -112,6 +119,10 @@ that lifecycle path is corrected, the only permitted close is an explicitly
 authorized `DELETE /pty/<sessionId>` after a fresh `GET /pty/list` proves an
 exact `harnessAgentId` match to the intended named seat. A guessed/stale session,
 leaf or pane is not an identity check. Never self-retire.
+
+**Spatial observation:** A hidden pane is retained layout, not a missing or dead seat.
+Multiple leaves can display the same session; a view is not an agent identity.
+Use fresh session and harness identity evidence before any separately authorized lifecycle action.
 
 ## Driving the Canvas — you do not need pccontrol for this
 
