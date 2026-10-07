@@ -32,16 +32,13 @@ and calls the existing `decide`, avoiding package imports, stale `sys.modules`
 policy objects and unverified bytecode caches. Only `None` means no floor refusal;
 malformed results, including falsey objects, fail closed.
 
-This candidate accepts package version **0.4.4** and these LF-normalized source
-SHA256s from the reviewed identity-portable source snapshot
-**9940abe59abb643c6d3181171c9c898e2eef51d7**, carried unchanged in the release
-version commit **351dd25383461ee0d118d5a4d241e35412ac7ecb**. The version commit
-also refreshes the catalog bridge pin and provenance; it is not a version-only
-freeze. The release payload reconciliation commit
-**21369da5521b8d7888ca9507da7eca5455ef2a8f** carries those policy bytes unchanged
-and corrects tracked-content catalog provenance. Exact wheel bytes and
-bundled-Suite parity must be verified from the new build; historical T0313
-wheel receipts below do not certify this artifact.
+This candidate accepts package version **0.4.5** only, bound to immutable OSS
+**fba17c7c40a83584283418c6499467a1a8805196** and the LF-normalized policy
+SHA256s below. The policy bytes match the published 0.4.4 reference
+**d3ba9a8f59fb7b10279be54980f2385d193273d1**; the candidate's parent is not
+assumed to contain that divergent release overlay. Earlier 0.4.4 construction
+receipts below remain historical. Package source binding and synthetic tests
+are not proof of an installed package/plugin or Claude-host activation.
 
 - `deny_gate.py`: `15e98aea4ac8154d028aadc2e375e18892d202a95794b9fbe82ef59706d3cd79`
 - `deny_floor.py`: `c60d0fee461c3a4bfcfae928c624e4c64ffbbefc7a5d9103851f03fb22704046`
@@ -126,6 +123,18 @@ Claude **2.1.287**; public TypeScript reference advertises **2.1.277** and is no
 claimed as generated installed-build types.
 
 Focused receipts during construction:
+
+- Combined 1.0.20 candidate, paired with immutable package
+  **fba17c7c40a83584283418c6499467a1a8805196**: eight focused Python files
+  (the four guard files below, role-wrapper generation, public privacy, privacy
+  regressions and first-run identity) reported **125 passed, 71 subtests passed**,
+  child exit 0. All four plugin version declarations are 1.0.20. The selected
+  package is read from its owned local source; guard distribution metadata and
+  first-run homes are isolated fixtures, not installation or live closure proof.
+  Generated-wrapper checks cover 42 unchanged METHOD bodies plus the bounded
+  default lifecycle template, with zero stale wrappers. The earlier attempt
+  stopped collection because the explicit paired-source environment was absent;
+  it is not counted as a pass.
 
 - `python -m pytest tests/test_guard_backend.py tests/test_guard_identity.py tests/test_guard_regressions.py tests/test_guard_release.py -q`:
   **72 passed**, exit 0, after the corrected 93148ae 0.4.4 pin update, including actual body-file

@@ -1,9 +1,7 @@
-"""Strict same-release pin tests against the authorized immutable OSS Git source.
+"""Strict pairing with immutable approved OSS fba17c7c40a83584283418c6499467a1a8805196.
 
-Set LITEHARNESS_TEST_POLICY_REPO to a local clone containing the corrected
-351dd25383461ee0d118d5a4d241e35412ac7ecb freeze, parent
-9940abe59abb643c6d3181171c9c898e2eef51d7. The shared conftest fixture checks
-actual canonical bytes and hashes. No installation or wheel execution occurs.
+The shared fixture validates 0.4.5 policy hashes against the published reference,
+not its parent. No installation or live installed-package fallback occurs.
 """
 import importlib.metadata
 import importlib.util
@@ -17,7 +15,7 @@ guard = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(guard)
 
 
-def distribution(root, version='0.4.4'):
+def distribution(root, version='0.4.5'):
     return SimpleNamespace(version=version, locate_file=lambda name: root / Path(name).name)
 
 
@@ -29,7 +27,7 @@ def test_exact_release_source_loads_and_preserves_deny(release_source, monkeypat
     assert result['hookSpecificOutput']['permissionDecision'] == 'deny'
 
 
-@pytest.mark.parametrize('version', ['0.4.3', '0.4.5', '0.4.4+unknown', 'unknown'])
+@pytest.mark.parametrize('version', ['0.4.3', '0.4.4', '0.4.6', '0.4.5+unknown', 'unknown'])
 def test_unreviewed_versions_refused_even_with_exact_source(release_source, monkeypatch, version):
     monkeypatch.setattr(guard.importlib.metadata, 'distribution', lambda name: distribution(release_source, version))
     with pytest.raises(ValueError, match='Unverified installed policy version'):

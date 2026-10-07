@@ -48,6 +48,28 @@ def render_bundle(raw: bytes, pure: bytes, preamble: str, role: str) -> bytes:
     return (prefix + "\n\n" + body.rstrip("\n") + "\n\n").encode("utf-8") + method
 
 
+def lifecycle_span(raw: bytes) -> tuple[int, int]:
+    """Locate one public lifecycle paragraph, preserving all surrounding bytes."""
+    marker = b"**Fleet lifecycle safety:**"
+    if raw.count(marker) != 1:
+        raise ValueError("expected one fleet lifecycle safety block")
+    start = raw.index(marker)
+    ending = re.search(rb"\r?\n\r?\n", raw[start:])
+    if ending is None:
+        raise ValueError("lifecycle block has no paragraph boundary")
+    return start, start + ending.start()
+
+
+def render_orchestrator(raw: bytes, source: bytes) -> bytes:
+    """Project only lifecycle glue, never the personalized/template architecture."""
+    start, end = lifecycle_span(raw)
+    source_start, source_end = lifecycle_span(source)
+    block = source[source_start:source_end].replace(b"\r\n", b"\n")
+    if raw[end:end + 2] == b"\r\n":
+        block = block.replace(b"\n", b"\r\n")
+    return raw[:start] + block + raw[end:]
+
+
 def generate(root: Path, *, check: bool = False) -> list[Path]:
     changes = []
     architecture_root = root / "prompts" / "cognitive-architectures"
@@ -66,6 +88,14 @@ def generate(root: Path, *, check: bool = False) -> list[Path]:
                 changes.append(path)
                 if not check:
                     path.write_bytes(new)
+    path = architecture_root / "orchestrator" / "default.md"
+    old = path.read_bytes()
+    source = (root / "prompts" / "orchestrator-role.md").read_bytes()
+    new = render_orchestrator(old, source)
+    if new != old:
+        changes.append(path)
+        if not check:
+            path.write_bytes(new)
     return changes
 
 

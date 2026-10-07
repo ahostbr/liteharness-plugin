@@ -148,7 +148,7 @@ def test_cli_protocol_failures_are_deny_not_crash(raw):
 
 def test_authoritative_floor_parity_for_examples(tmp_path, monkeypatch, release_source):
     # Actual immutable corrected canonical bytes, never an old install relabeled.
-    candidate = SimpleNamespace(version='0.4.4',
+    candidate = SimpleNamespace(version='0.4.5',
                                 locate_file=lambda name: release_source / Path(name).name)
     monkeypatch.setattr(guard.importlib.metadata, 'distribution', lambda name: candidate)
     real = guard.load_gate()

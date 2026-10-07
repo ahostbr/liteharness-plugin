@@ -59,12 +59,39 @@ class RoleWrapperTests(unittest.TestCase):
                 bundle = root / 'prompts' / 'cognitive-architectures' / tier / f'{role}.md'
                 bundle.parent.mkdir(parents=True, exist_ok=True)
                 bundle.write_bytes(f'> **METHOD FILE - VOID CLAUSE.**\n\n# POLYMATHIC EXAMPLE — {role.title()} Mode\n\nOld role.\n\nmethod\n'.encode())
+            source = root / 'prompts' / 'orchestrator-role.md'
+            source.write_bytes(b'role\n\n**Fleet lifecycle safety:**\nNew lifecycle.\n\nend\n')
+            template = root / 'prompts' / 'cognitive-architectures' / 'orchestrator' / 'default.md'
+            template.parent.mkdir(parents=True)
+            template.write_bytes(b'{{TEMPLATE}}\n\n**Fleet lifecycle safety:** Old lifecycle.\n\n{{KEEP}}\n')
             before = {p: p.read_bytes() for p in root.rglob('*.md')}
-            self.assertEqual(len(wrappers.generate(root, check=True)), 4)
+            self.assertEqual(len(wrappers.generate(root, check=True)), 5)
             self.assertEqual(before, {p: p.read_bytes() for p in root.rglob('*.md')})
-            self.assertEqual(len(wrappers.generate(root)), 4)
+            self.assertEqual(len(wrappers.generate(root)), 5)
             self.assertEqual(wrappers.generate(root, check=True), [])
             self.assertEqual(wrappers.generate(root), [])
+
+    def test_orchestrator_changes_only_lifecycle_and_preserves_template_bytes(self):
+        source = (ROOT / 'prompts' / 'orchestrator-role.md').read_bytes()
+        template = (ROOT / 'prompts' / 'cognitive-architectures' / 'orchestrator' / 'default.md').read_bytes()
+        start, end = wrappers.lifecycle_span(template)
+        rendered = wrappers.render_orchestrator(template, source)
+        new_start, new_end = wrappers.lifecycle_span(rendered)
+        self.assertEqual(template[:start], rendered[:new_start])
+        self.assertEqual(template[end:], rendered[new_end:])
+        self.assertEqual(rendered, wrappers.render_orchestrator(rendered, source))
+        self.assertIn(b'{{ORCHESTRATOR_NAME}}', rendered)
+        self.assertIn(b'liteharness ack-idle --handoff <path>', rendered)
+        self.assertEqual(wrappers.generate(ROOT, check=True), [])
+
+    def test_orchestrator_crlf_and_invalid_boundaries(self):
+        raw = b'prefix\r\n\r\n**Fleet lifecycle safety:** old\r\n\r\nsuffix\r\n'
+        source = b'**Fleet lifecycle safety:**\nnew\n\nrest'
+        rendered = wrappers.render_orchestrator(raw, source)
+        self.assertEqual(rendered, b'prefix\r\n\r\n**Fleet lifecycle safety:**\r\nnew\r\n\r\nsuffix\r\n')
+        for invalid in (b'no marker', source + source, b'**Fleet lifecycle safety:** no boundary'):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                wrappers.render_orchestrator(raw, invalid)
 
 
 if __name__ == '__main__':

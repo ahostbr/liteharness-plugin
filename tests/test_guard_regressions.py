@@ -71,7 +71,7 @@ def test_plain_nonforce_remove_preserves_permission_path(tmp_path):
 
 
 def test_compiles_verified_bytes_and_binds_exact_floor(monkeypatch, tmp_path, release_source):
-    candidate = SimpleNamespace(version='0.4.4',
+    candidate = SimpleNamespace(version='0.4.5',
                                 locate_file=lambda name: release_source / Path(name).name)
     monkeypatch.setattr(guard.importlib.metadata, 'distribution', lambda name: candidate)
     # Any SourceFileLoader entry would potentially trust a .pyc. It must not run.

@@ -53,8 +53,8 @@ def load_gate():
     import hashlib
     expected = {"deny_gate.py": "15e98aea4ac8154d028aadc2e375e18892d202a95794b9fbe82ef59706d3cd79",
                 "deny_floor.py": "c60d0fee461c3a4bfcfae928c624e4c64ffbbefc7a5d9103851f03fb22704046"}
-    # Policy source: OSS 9940abe59abb643c6d3181171c9c898e2eef51d7; package version 0.4.4.
-    if distribution.version != "0.4.4":
+    # Policy source: OSS fba17c7c40a83584283418c6499467a1a8805196; package version 0.4.5.
+    if distribution.version != "0.4.5":
         raise ValueError("Unverified installed policy version")
     from types import ModuleType
     modules = {}
