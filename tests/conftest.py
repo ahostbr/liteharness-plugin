@@ -1,13 +1,12 @@
-"""Immutable 0.4.5 canonical-source fixture; no installed-package fallback."""
+"""Immutable exported 0.4.6 source fixture; no Git or installed-package fallback."""
 import hashlib
+import json
 import os
-import subprocess
 from pathlib import Path
 
 import pytest
 
-RELEASE_COMMIT = 'fba17c7c40a83584283418c6499467a1a8805196'
-PUBLISHED_REFERENCE = 'd3ba9a8f59fb7b10279be54980f2385d193273d1'
+RELEASE_COMMIT = '4b56fcc37daea090dbd950dcc297ebf795d5b130'
 EXPECTED = {
     'deny_gate.py': '15e98aea4ac8154d028aadc2e375e18892d202a95794b9fbe82ef59706d3cd79',
     'deny_floor.py': 'c60d0fee461c3a4bfcfae928c624e4c64ffbbefc7a5d9103851f03fb22704046',
@@ -16,20 +15,20 @@ EXPECTED = {
 
 @pytest.fixture
 def release_source(tmp_path):
-    configured = os.environ.get('LITEHARNESS_TEST_POLICY_REPO')
+    configured = os.environ.get('LITEHARNESS_TEST_POLICY_SOURCE')
     if not configured:
-        pytest.skip('explicit local immutable release-source repo required')
-    repo = Path(configured)
-
-    def git(*args):
-        return subprocess.run(['git', *args], cwd=repo, capture_output=True, check=True).stdout
-
-    assert git('rev-parse', RELEASE_COMMIT).decode().strip() == RELEASE_COMMIT
-    assert b'version = "0.4.5"' in git('show', RELEASE_COMMIT + ':pyproject.toml')
+        pytest.skip('explicit immutable exported release-source artifact required')
+    root = Path(configured)
+    assert not (root / '.git').exists(), 'use a frozen source export, not a live checkout'
+    receipt = json.loads((root / 'EXPORT-RECEIPT.json').read_text(encoding='utf-8'))
+    assert receipt['source_commit'] == RELEASE_COMMIT
+    metadata = (root / 'pyproject.toml').read_bytes()
+    assert hashlib.sha256(metadata).hexdigest() == receipt['files']['pyproject.toml']['sha256_raw']
+    assert b'version = "0.4.6"' in metadata
     for name, digest in EXPECTED.items():
-        source = git('show', RELEASE_COMMIT + ':liteharness/' + name)
-        published = git('show', PUBLISHED_REFERENCE + ':liteharness/' + name)
-        assert source.replace(b'\r\n', b'\n') == published.replace(b'\r\n', b'\n')
+        relative = 'liteharness/' + name
+        source = (root / relative).read_bytes()
+        assert hashlib.sha256(source).hexdigest() == receipt['files'][relative]['sha256_raw']
         assert hashlib.sha256(source.replace(b'\r\n', b'\n')).hexdigest() == digest
         (tmp_path / name).write_bytes(source)
     return tmp_path

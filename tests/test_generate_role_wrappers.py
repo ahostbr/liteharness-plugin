@@ -81,7 +81,9 @@ class RoleWrapperTests(unittest.TestCase):
         self.assertEqual(template[end:], rendered[new_end:])
         self.assertEqual(rendered, wrappers.render_orchestrator(rendered, source))
         self.assertIn(b'{{ORCHESTRATOR_NAME}}', rendered)
-        self.assertIn(b'liteharness ack-idle --handoff <path>', rendered)
+        self.assertIn(b'Close a terminal only when the human explicitly asks.', rendered)
+        self.assertNotIn(b'liteharness ack-idle', rendered)
+        self.assertNotIn(b'liteharness retire', rendered)
         self.assertEqual(wrappers.generate(ROOT, check=True), [])
 
     def test_orchestrator_crlf_and_invalid_boundaries(self):

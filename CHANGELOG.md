@@ -3,7 +3,23 @@
 User-facing changes are grouped by version using [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Historical source landing dates below are not reconstructed publication timestamps.
 
-## [1.0.20] — Unreleased
+## [1.0.21] — Unreleased
+
+### Changed
+- Remove active `retire` / `ack-idle` directives from canonical role prompts,
+  generated wrappers and mirrored orchestration skills. Close terminals only on
+  explicit human instruction; preserve cognitive method bodies, named-seat identity
+  and unrelated host safeguards. The 1.0.20 entry below is historical guidance.
+- Already-running seats retain their old preambles until they start again.
+  Publication does not rewrite live sessions or authorize any restart or reload.
+- Pair the guard with package **0.4.6** and the exact verified LF-normalized policy
+  hashes. Other package versions or altered source bytes refuse; no guard bypass
+  or installed-cache patch is included.
+- Synchronize Theater shared-pane/tab-reuse and Original/Turbo speech-capability
+  guidance from the selected package catalog. Live host behavior and audible effects
+  remain unverified; existing hook runtime files and public identities are retained.
+
+## [1.0.20] — Historical source entry
 
 Candidate changes relative to the published 1.0.19 source. No publication date is assigned.
 

@@ -32,13 +32,13 @@ and calls the existing `decide`, avoiding package imports, stale `sys.modules`
 policy objects and unverified bytecode caches. Only `None` means no floor refusal;
 malformed results, including falsey objects, fail closed.
 
-This candidate accepts package version **0.4.5** only, bound to immutable OSS
-**fba17c7c40a83584283418c6499467a1a8805196** and the LF-normalized policy
-SHA256s below. The policy bytes match the published 0.4.4 reference
-**d3ba9a8f59fb7b10279be54980f2385d193273d1**; the candidate's parent is not
-assumed to contain that divergent release overlay. Earlier 0.4.4 construction
-receipts below remain historical. Package source binding and synthetic tests
-are not proof of an installed package/plugin or Claude-host activation.
+This candidate accepts package version **0.4.6** only and the LF-normalized
+policy SHA256s below. These policy bytes are retained from the immutable public
+0.4.5 baseline **fba17c7c40a83584283418c6499467a1a8805196**, including the
+reviewed Git-read overlay. The release receipt records the final built 0.4.6
+source commit; the policy baseline is not that new release commit. Earlier
+0.4.4/0.4.5 construction receipts below remain historical. Package source binding
+and synthetic tests are not proof of installation or Claude-host activation.
 
 - `deny_gate.py`: `15e98aea4ac8154d028aadc2e375e18892d202a95794b9fbe82ef59706d3cd79`
 - `deny_floor.py`: `c60d0fee461c3a4bfcfae928c624e4c64ffbbefc7a5d9103851f03fb22704046`

@@ -21,7 +21,7 @@ from pathlib import Path
 PROTOCOL = 1
 FILE_WRITES = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
 IDENTITY = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
-# Ported from no_full_suite.py, SHA256 recorded in docs/claude-guards.md.
+# Ported from no_full_suite.py, retained as a bounded command recognizer.
 TEST_HEAD = re.compile(r"^(?:\w+=\S+\s+)*(?:bunx\s+|npx\s+|python\s+-m\s+)?(vitest|playwright|pytest|cargo\s+test|bun\s+run\s+test|bun\s+test|npm\s+(run\s+)?test|pnpm\s+(run\s+)?test|yarn\s+(run\s+)?test)\b")
 FULL_SUITE = [
     r"\bbun\s+run\s+test(\b|:)",
@@ -53,8 +53,9 @@ def load_gate():
     import hashlib
     expected = {"deny_gate.py": "15e98aea4ac8154d028aadc2e375e18892d202a95794b9fbe82ef59706d3cd79",
                 "deny_floor.py": "c60d0fee461c3a4bfcfae928c624e4c64ffbbefc7a5d9103851f03fb22704046"}
-    # Policy source: OSS fba17c7c40a83584283418c6499467a1a8805196; package version 0.4.5.
-    if distribution.version != "0.4.5":
+    # T0335-H / package 0.4.6: retain policy from public baseline fba17c7c40a83584283418c6499467a1a8805196.
+    # The fixed hashes above bind the policy bytes; the release ledger pins the final commit.
+    if distribution.version != "0.4.6":
         raise ValueError("Unverified installed policy version")
     from types import ModuleType
     modules = {}
