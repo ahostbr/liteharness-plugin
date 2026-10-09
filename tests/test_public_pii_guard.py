@@ -17,6 +17,8 @@ spec.loader.exec_module(guard)
 ACTOR = bytes.fromhex('73656e74696e656c').decode()
 HUMAN = bytes.fromhex('7279616e').decode()
 AUTHOR = HUMAN.title() + ' Devlin'
+# A token that still blocks; a name alone is only a printed note.
+CODENAME = bytes.fromhex('4b75726f72797575').decode()
 
 
 class PublicGuardTests(unittest.TestCase):
@@ -106,14 +108,32 @@ class PublicGuardTests(unittest.TestCase):
             self.assertNotEqual(run().returncode, 0)
             self.assertNotEqual(run('--alll').returncode, 0)
             path = root / 'notes.md'
-            path.write_text('Ask ' + ACTOR, encoding='utf-8')
+            path.write_text('Ask ' + CODENAME, encoding='utf-8')
             subprocess.run(['git', 'add', 'notes.md'], cwd=root, check=True)
             path.write_text('Clean public prose', encoding='utf-8')
             self.assertEqual(run().returncode, 1)
             subprocess.run(['git', 'add', 'notes.md'], cwd=root, check=True)
-            path.write_text('Ask ' + ACTOR, encoding='utf-8')
+            path.write_text('Ask ' + CODENAME, encoding='utf-8')
             self.assertEqual(run().returncode, 0)
             self.assertEqual(run('--all').returncode, 1)
+
+    def test_name_alone_is_a_printed_note_and_a_codename_still_blocks(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            subprocess.run(['git', 'init', '-q', str(root)], check=True, capture_output=True)
+            def staged(text):
+                (root / 'notes.md').write_text(text, encoding='utf-8')
+                subprocess.run(['git', 'add', 'notes.md'], cwd=root, check=True)
+                return subprocess.run([sys.executable, str(GUARD)], cwd=root, capture_output=True, text=True)
+            result = staged('Ask ' + ACTOR)
+            self.assertEqual(result.returncode, 0)
+            self.assertIn('note: 1 name mention(s), not blocking', result.stdout)
+            self.assertIn('1 of 1', result.stdout)
+            self.assertNotIn(ACTOR, result.stdout.lower())
+            result = staged('Ask ' + ACTOR + ' about ' + CODENAME)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn('notes.md:1 [private codename]', result.stdout)
+            self.assertNotIn('identity]', result.stdout)
 
 
 if __name__ == '__main__':
