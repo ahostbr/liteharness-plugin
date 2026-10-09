@@ -3,6 +3,14 @@
 User-facing changes are grouped by version using [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Historical source landing dates below are not reconstructed publication timestamps.
 
+## [1.0.22] — Unreleased
+
+### Removed
+- The native tool guard mod: its backend and front half (`hooks/mods/guard_backend.py`,
+  `hooks/mods/guards.mjs`), its `tool.call` / `tool.check` hook-up in `hooks/register.mjs`,
+  its document and its tests. The plugin no longer pins a package version or policy
+  hashes. The fleet, usage, paste-history and inbox mods are unchanged.
+
 ## [1.0.21] — Unreleased
 
 ### Changed
