@@ -6,10 +6,11 @@ Historical source landing dates below are not reconstructed publication timestam
 ## [1.0.22] — Unreleased
 
 ### Removed
-- The native tool guard mod: its backend and front half (`hooks/mods/guard_backend.py`,
-  `hooks/mods/guards.mjs`), its `tool.call` / `tool.check` hook-up in `hooks/register.mjs`,
-  its document and its tests. The plugin no longer pins a package version or policy
-  hashes. The fleet, usage, paste-history and inbox mods are unchanged.
+- The native tool guard mod: its backend and front half in `hooks/mods/`, its
+  `tool.call` / `tool.check` hook-up in `hooks/register.mjs`, its document and its
+  tests. The plugin no longer pins a package version or policy hashes. The fleet,
+  usage, paste-history and inbox mods are unchanged. The mod documents no longer
+  describe a guard that runs first.
 
 ## [1.0.21] — Unreleased
 

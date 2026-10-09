@@ -49,8 +49,9 @@ not module variables; a module reload can reread it. No retention cleanup occurs
 
 This is not security approval or permission handling. Existing deny-floor,
 Python hooks, stream forwarding, cache band, compact and downstream UI behavior
-remain in place. B/C/D wiring is integrated separately, not merged in this worker
-branch. No manifest/version/settings/installed-plugin changes are made.
+remain in place. B/D wiring is integrated separately, not merged in this worker
+branch; the tool guard mod (C) was removed. No manifest/version/settings/installed-plugin
+changes are made.
 
 ## Evidence tiers
 

@@ -59,16 +59,16 @@ not override the common deny floor or merge/human gates.
 
 ## Integration and validation limits
 
-The shared entrypoint composes inbox/context snapshots from ModsB, the common
-deny floor from ModsC, and this feature's pure helpers. Replace the standalone
+The shared entrypoint composes inbox/context snapshots from ModsB and this
+feature's pure helpers. The tool guard mod (ModsC) was removed;
+the deny floor is installed outside the plugin, in the user's own Claude settings. Replace the standalone
 `fleetInboxSnapshot()` null seam with ModsB's same-file `inboxSnapshot()`:
 `{ schemaVersion, sessionId, agentId, enabled, status, pendingIds,
 acceptedIds, lastAcceptedAt, paneId }`. Accepted means entered/queued, **not
 processed**. Derive availability from a matching session identity and explicit
 status, rather than asserting availability unconditionally. Standalone D saves
-`inbox:null, inboxAvailable:false` and reports this limitation. Every tool-call path
-must execute the common deny floor **first**; this feature introduces no
-independent tool-call handler. Manifest/hooks wiring and all four plugin
+`inbox:null, inboxAvailable:false` and reports this limitation. This feature
+introduces no tool-call handler. Manifest/hooks wiring and all four plugin
 version sites are coordinated by the leader, not independently bumped here.
 
 Fixtures inject process replies, storage, clocks, and compaction results. No
