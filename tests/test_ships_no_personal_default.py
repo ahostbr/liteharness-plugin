@@ -41,6 +41,9 @@ def test_no_shipped_file_names_a_personal_default():
     assert not found, 'shipped files name a personal default: ' + repr(found)
 
 
-def test_the_only_orchestrator_template_is_the_generic_one():
-    assert sorted(path.name for path in ORCHESTRATOR.iterdir()) == ['default.md']
+def test_the_only_orchestrator_template_that_ships_is_the_generic_one():
+    # What is tracked is what ships; .gitignore expects a local-only personal file beside it.
+    listed = subprocess.check_output(['git', 'ls-files', '-z', '--', ORCHESTRATOR.relative_to(ROOT).as_posix()], cwd=ROOT)
+    tracked = [name for name in listed.decode('utf-8').split('\0') if name]
+    assert tracked == ['prompts/cognitive-architectures/orchestrator/default.md']
     assert '{{ORCHESTRATOR_NAME}}' in (ORCHESTRATOR / 'default.md').read_text(encoding='utf-8')

@@ -77,7 +77,7 @@ an obsolete job cannot renew/ack a replacement session or publish a stale batch.
 Peer text is JSON-framed as data and terminal/control sequences are stripped.
 Sender labels or a message body never grant authority or bypass tool policy.
 B registers no `tool.call` or approval path. The tool guard mod (C) was removed;
-the deny floor is installed outside the plugin, in the user's own Claude settings.
+this plugin installs no tool guard.
 
 ## Human-visible surface and D seam
 

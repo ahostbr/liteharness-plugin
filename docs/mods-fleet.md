@@ -61,7 +61,7 @@ not override the common deny floor or merge/human gates.
 
 The shared entrypoint composes inbox/context snapshots from ModsB and this
 feature's pure helpers. The tool guard mod (ModsC) was removed;
-the deny floor is installed outside the plugin, in the user's own Claude settings. Replace the standalone
+this plugin installs no tool guard. Replace the standalone
 `fleetInboxSnapshot()` null seam with ModsB's same-file `inboxSnapshot()`:
 `{ schemaVersion, sessionId, agentId, enabled, status, pendingIds,
 acceptedIds, lastAcceptedAt, paneId }`. Accepted means entered/queued, **not
