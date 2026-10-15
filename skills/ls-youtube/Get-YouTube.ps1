@@ -80,7 +80,8 @@ if ($Url -match '[?&]v=([A-Za-z0-9_-]{11})') {
 }
 
 $TempDir = $env:TEMP
-$SubFileBase = Join-Path $TempDir "yt-transcript-$VideoId"
+# Per-run name: a previous/parallel run's captions must not hide a refused fetch.
+$SubFileBase = Join-Path $TempDir "yt-transcript-$VideoId-$([guid]::NewGuid().ToString('N'))"
 $SavePayloadPath = Join-Path $TempDir "yt-save-$VideoId.json"
 
 # ── Helper: bounded diagnostic that PRIORITISES the decisive ERROR (T894b) ────
@@ -104,6 +105,55 @@ function Get-DiagText([object[]]$lines, [int]$maxLen = 400) {
     $text = (($ordered -join ' | ') -replace '\s+', ' ').Trim()
     if ($text.Length -gt $maxLen) { $text = $text.Substring(0, $maxLen) + '...' }
     return $text
+}
+
+# Audio is the last resort, using ONLY an already-running whisper.cpp server.
+function Get-AudioTranscript([string]$output) {
+    try {
+        $server = Invoke-WebRequest 'http://127.0.0.1:8080/' -UseBasicParsing -TimeoutSec 3 -MaximumRedirection 0 -ErrorAction Stop
+        if ($server.Content -notmatch '(?i)whisper\.cpp') { throw 'not whisper.cpp' }
+    } catch { throw "Audio route needs LiteSuite's Whisper running on 127.0.0.1:8080 (whisper.cpp): $($_.Exception.Message)" }
+    foreach ($tool in @('ffmpeg', 'curl.exe')) {
+        if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "$tool not on PATH" }
+    }
+    $infoResult = & yt-dlp @JsRuntimeArgs --dump-single-json --skip-download --no-playlist $Url 2>&1
+    if ($LASTEXITCODE -ne 0) { throw "Audio formats: $(Get-DiagText $infoResult)" }
+    $info = ($infoResult | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }) -join "`n" | ConvertFrom-Json -ErrorAction Stop
+    $audio = @($info.formats | Where-Object { $_.vcodec -eq 'none' -and $_.acodec -and $_.acodec -ne 'none' })
+    $original = @($audio | Where-Object { $_.format_note -match '\boriginal\b' })
+    if ($original.Count) { $audio = $original }
+    elseif (@($audio.language | Where-Object { $_ } | Select-Object -Unique).Count -gt 1 -or @($audio | Where-Object { $_.format_note -match '\bdubbed\b' }).Count) {
+        throw 'Cannot identify original audio among dubbed/language tracks'
+    }
+    # One best direct candidate, then one HLS candidate; IDs come from metadata.
+    $candidates = @($audio | Where-Object { $_.protocol -notmatch 'm3u8' } | Sort-Object abr -Descending | Select-Object -First 1)
+    $candidates += @($audio | Where-Object { $_.protocol -match 'm3u8' } | Sort-Object abr -Descending | Select-Object -First 1)
+    $audioPath = "$SubFileBase.audio"
+    $wavPath = "$SubFileBase.audio.wav"
+    $downloaded = $false
+    $downloadDiag = @()
+    foreach ($format in $candidates) {
+        Remove-Item -LiteralPath $audioPath -Force -ErrorAction SilentlyContinue
+        $result = & yt-dlp @JsRuntimeArgs --no-playlist --no-part -f $format.format_id -o $audioPath $Url 2>&1
+        if ($LASTEXITCODE -eq 0 -and (Test-Path -LiteralPath $audioPath) -and (Get-Item -LiteralPath $audioPath).Length -gt 0) {
+            Write-Host "Audio: $($format.format_id) [$($format.format_note)] via $($format.protocol)" -ForegroundColor DarkGray
+            $downloaded = $true; break
+        }
+        $downloadDiag += "$($format.format_id): $(Get-DiagText $result)"
+        Write-Warning "Audio format failed: $($downloadDiag[-1])"
+    }
+    if (-not $downloaded) { throw "Audio download failed (no usable formats): $($downloadDiag -join '; ')" }
+    $result = & ffmpeg -hide_banner -loglevel error -y -i $audioPath -ar 16000 -ac 1 -c:a pcm_s16le $wavPath 2>&1
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $wavPath)) { throw "Audio conversion failed: $(Get-DiagText $result)" }
+    $result = & curl.exe --silent --show-error --fail --max-time 300 http://127.0.0.1:8080/inference -F "file=@$wavPath" -F response_format=verbose_json -F language=en 2>&1
+    if ($LASTEXITCODE -ne 0) { throw "Whisper inference failed: $(Get-DiagText $result)" }
+    $response = ($result -join "`n") | ConvertFrom-Json -ErrorAction Stop
+    $events = @($response.segments | Where-Object { $_.text -and $_.text.Trim() } | ForEach-Object {
+        if ($null -eq $_.start -or $null -eq $_.end -or $_.start -lt 0 -or $_.end -lt $_.start) { throw 'invalid Whisper timing' }
+        @{ tStartMs = [math]::Round($_.start * 1000); dDurationMs = [math]::Round(($_.end - $_.start) * 1000); segs = @(@{utf8 = $_.text}) }
+    })
+    if (-not $events.Count) { throw 'Whisper returned no usable transcript text' }
+    @{events = $events} | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $output -Encoding UTF8 -ErrorAction Stop
 }
 
 try {
@@ -228,26 +278,64 @@ try {
     # Glob for the subtitle file (yt-dlp appends .en.json3, .en-US.json3, etc.)
     $SubFile = Get-ChildItem "$SubFileBase*.json3" -ErrorAction SilentlyContinue | Select-Object -First 1
 
-    if (-not $SubFile) {
-        # 🔴 T894b — A REFUSED FETCH IS NOT "NO SUBTITLES", and this branch used to
-        # call every empty result the second thing. 429, members-only and network
-        # failures are GATED AND RETRYABLE; "this video has no English captions" is
-        # DEFINITIVE. Reporting the first as the second tells the user to stop
-        # trying when they should wait, and the exit code carried the same lie.
-        # yt-dlp's own exit code separates them: nonzero = it failed, 0 with no
-        # file = it succeeded and there was nothing to get.
-        if ($subExit -ne 0) {
-            Write-Error "Subtitle fetch FAILED (yt-dlp exit $subExit) - a fetch failure, NOT no-subs. $(Get-DiagText $subStderr)"
-            exit 3
+    $transcriptRoute = 'captions (yt-dlp JSON3)'
+    $primaryDataDiag = ''
+    if ($subExit -eq 0 -and $SubFile) {
+        try {
+            $json = Get-Content -Raw -Encoding UTF8 -LiteralPath $SubFile.FullName -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+            $usable = @($json.events | Where-Object { ($_.segs.utf8 -join '').Trim() })
+            if (-not $usable.Count) { throw 'no usable caption text' }
+        } catch {
+            $primaryDataDiag = "Subtitle data FAILED: $($_.Exception.Message)"
         }
-        Write-Error "No subtitle file found (yt-dlp exit 0) - no English subtitles. $(Get-DiagText $subStderr)"
-        exit 2
+    }
+    if ($subExit -ne 0 -or -not $SubFile -or $primaryDataDiag) {
+        # A partial file from a refused run is not success; an absent file alone
+        # is not proof of absent English captions either. Confirm via catalog.
+        $primaryDiag = "yt-dlp exit ${subExit}: $(Get-DiagText $subStderr)"
+        if (-not $SubFile) { $primaryDiag += ' (no subtitle file produced)' }
+        if ($primaryDataDiag) { $primaryDiag += " ($primaryDataDiag)" }
+        Write-Warning "Subtitle route FAILED ($primaryDiag). Trying standalone youtube-transcript-api."
+        $fallbackPath = "$SubFileBase.api.json3"
+        try {
+            if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
+                throw 'python not on PATH; youtube-transcript-api fallback requires Python'
+            }
+            # Argument array, not generated code or a shell command: paths/IDs
+            # containing shell metacharacters cannot become executable text.
+            $fallbackResult = & python (Join-Path $PSScriptRoot 'Get-Transcript.py') $VideoId $fallbackPath 2>&1
+            $fallbackExit = $LASTEXITCODE
+            $fallbackDiag = Get-DiagText @($fallbackResult) 1600
+        } catch {
+            $fallbackExit = 3
+            $fallbackDiag = $_.Exception.Message
+        }
+        $transcriptRoute = 'transcript-api (standalone Python captions)'
+        if ($fallbackExit -eq 2) {
+            Write-Warning "No English subtitles (youtube-transcript-api catalog confirmed). $fallbackDiag"
+        }
+        if ($fallbackExit -ne 0 -or -not (Test-Path -LiteralPath $fallbackPath)) {
+            Write-Warning "Caption routes failed; trying whisper-audio."
+            try {
+                Get-AudioTranscript $fallbackPath
+                $transcriptRoute = 'whisper-audio (local speech recognition, not captions)'
+            } catch {
+                Write-Error "Transcript fetch FAILED on all routes. $primaryDiag; youtube-transcript-api exit ${fallbackExit}: $fallbackDiag; whisper-audio: $($_.Exception.Message)"
+                exit 3
+            }
+        }
+        $SubFile = Get-Item -LiteralPath $fallbackPath
     }
 
-    # ── 4. Parse JSON3 ────────────────────────────────────────────────────────
+    # ── 4. Parse JSON3 (all routes share the existing renderer) ───────────────
 
-    $json = Get-Content -Raw -Encoding UTF8 $SubFile.FullName | ConvertFrom-Json
-    $events = @($json.events | Where-Object { $_.segs })
+    try {
+        $json = Get-Content -Raw -Encoding UTF8 -LiteralPath $SubFile.FullName -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+        $events = @($json.events | Where-Object { $_.segs })
+    } catch {
+        Write-Error "Subtitle data FAILED ($transcriptRoute) - NOT no-subs. $($_.Exception.Message)"
+        exit 3
+    }
 
     $Lines = [System.Collections.Generic.List[string]]::new()
     $Segments = [System.Collections.Generic.List[object]]::new()
@@ -283,6 +371,11 @@ try {
             offset   = [int]$startSec
             duration = $durationSec
         })
+    }
+
+    if ($Lines.Count -eq 0) {
+        Write-Error "Subtitle data FAILED ($transcriptRoute): no usable caption text - NOT no-subs."
+        exit 3
     }
 
     # ── 5. (Optional) Save to a local archive — not configured by default ────────
@@ -500,6 +593,7 @@ print('inserted' if changed else 'exists')
 **URL:** https://youtube.com/watch?v=$VideoId
 **Channel:** $ChannelHandle
 **Exported:** $exportDate
+**Transcript route:** $transcriptRoute
 **Video:** $videoStatus
 **Frames:** $frameStatus
 **Archived:** $archiveStatus
@@ -521,6 +615,7 @@ $transcript
 
 } finally {
     # ── 7. Cleanup ────────────────────────────────────────────────────────────
+    Remove-Item "$SubFileBase.audio*" -Force -ErrorAction SilentlyContinue
     Remove-Item "$SubFileBase*.json3" -Force -ErrorAction SilentlyContinue
     Remove-Item $SavePayloadPath -Force -ErrorAction SilentlyContinue
 }
