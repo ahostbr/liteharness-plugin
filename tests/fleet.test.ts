@@ -3,21 +3,19 @@ import { fleetSnapshot, spawnDenial } from '../hooks/mods/fleet.mjs'
 
 const VALID = { prompt: 'Task brief\nAgent-Tier: worker\n', model: 'claude-opus-5-5[1m]', cwd: '/workspace', fork: false, parentModel: 'claude-opus-5-5[1m]' }
 
-test('spawn requires explicit model, declared tier and owned absolute cwd', () => {
-  expect(spawnDenial(VALID, VALID.cwd)).toBe(null)
-  for (const model of [undefined, 'opus', 'inherit', 'claude-opus-5-5', 'claude-opus-5-5-1m', 'claude-future-9[1m]']) {
-    expect(spawnDenial({ ...VALID, model }, VALID.cwd)).toMatch(/model id/)
+test('native Agent is closed; visible fleet splits are the only launch path', () => {
+  for (const model of [undefined, 'opus', 'sonnet', 'haiku', 'fable', 'inherit', 'claude-opus-5-5[1m]', 'claude-sonnet-5-5[1m]']) {
+    expect(spawnDenial({ ...VALID, model }, VALID.cwd)).toMatch(/disabled by fleet policy/)
+    expect(spawnDenial({ ...VALID, model }, VALID.cwd)).toMatch(/liteharness spawn --split/)
   }
-  for (const prompt of ['', 'Agent-Tier: unknown', 'Agent-Tier: worker\nAgent-Tier: leader', 'Agent-Tier: worker\nAgent-Tier: invalid text']) {
-    expect(spawnDenial({ ...VALID, prompt }, VALID.cwd)).toMatch(/Agent-Tier/)
+  for (const prompt of ['', 'Agent-Tier: unknown', 'Agent-Tier: worker\nAgent-Tier: leader']) {
+    expect(spawnDenial({ ...VALID, prompt }, VALID.cwd)).toMatch(/disabled by fleet policy/)
   }
   for (const cwd of ['', '.', 'relative/path', 'C:relative', '/workspace\n', '/workspace/../other']) {
-    expect(spawnDenial({ ...VALID, cwd }, cwd)).toMatch(/cwd/)
+    expect(spawnDenial({ ...VALID, cwd }, cwd)).toMatch(/<absolute-owned-worktree>/)
   }
-  expect(spawnDenial({ ...VALID, cwd: 'C:\\workspace' }, 'C:\\workspace')).toBe(null)
-  expect(spawnDenial({ ...VALID, cwd: '\\\\server\\share\\work' }, '\\\\server\\share\\work')).toBe(null)
-  expect(spawnDenial({ ...VALID, cwd: '/other' }, '/workspace')).toMatch(/scope/)
-  expect(spawnDenial({ ...VALID, fork: true, parentModel: 'claude-sonnet-5' }, '/workspace')).toMatch(/Fork/)
+  expect(spawnDenial({ ...VALID, fork: true }, '/workspace')).toMatch(/disabled by fleet policy/)
+  expect(spawnDenial({ ...VALID, cwd: '/other' }, '/workspace')).toMatch(/--cwd '\/workspace'/)
 })
 
 test('fleet snapshot is bounded, counted and display-safe', () => {

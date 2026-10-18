@@ -14,6 +14,7 @@ let sid = 'seat'
 let compactCalls = 0
 let forwarded = 0
 let statFailure = false
+let statCalls = 0
 let blockNextIdentity = false
 let identityEntered
 let releaseIdentity
@@ -35,7 +36,7 @@ const $ = {
     if (persistenceFailure && key.startsWith('handoff.')) throw new Error('store unavailable')
     files.set(key, value)
   } },
-  fs: { write: async () => {}, stat: async () => { if (statFailure) throw new Error('missing'); return { kind: 'dir', isLink: false, realPath: '/workspace' } } },
+  fs: { write: async () => {}, stat: async () => { statCalls++; if (statFailure) throw new Error('missing'); return { kind: 'dir', isLink: false, realPath: '/workspace' } } },
   process: { run: async argv => {
     assert.deepEqual(argv, ['python', '-m', 'liteharness.mod_fleet'])
     if (processFailure) return { exitCode: 1, stdout: '', stderr: 'unavailable' }
@@ -114,12 +115,16 @@ assert.match((await fire('command.run', { command: 'tick' })).text, /failed/)
 assert.match(text(await fire('ui.render', { component: 'Pane', requestId: 'liteharness-fleet' })), /previous snapshot/)
 processFailure = false
 const validSpawn = { prompt: 'Agent-Tier: worker\n', model: 'claude-opus-5-5[1m]', cwd: '/workspace', parentModel: 'claude-opus-5-5[1m]', fork: false }
-assert.match((await fire('agent.spawn', { ...validSpawn, cwd: '/other' })).deny, /scope/)
-assert.match((await fire('agent.spawn', { ...validSpawn, model: 'opus' })).deny, /model id/)
+const beforeSpawnForwarded = forwarded
+const beforeSpawnStats = statCalls
+for (const model of [undefined, 'opus', 'sonnet', 'haiku', 'fable', 'claude-opus-5-5[1m]', 'claude-sonnet-5-5[1m]']) {
+  assert.match((await fire('agent.spawn', { ...validSpawn, model, cwd: '/other' })).deny, /disabled by fleet policy/)
+}
 statFailure = true
-assert.match((await fire('agent.spawn', validSpawn)).deny, /could not be verified/)
+assert.match((await fire('agent.spawn', validSpawn)).deny, /disabled by fleet policy/)
 statFailure = false
-assert.deepEqual(await fire('agent.spawn', validSpawn), validSpawn)
+assert.equal(forwarded, beforeSpawnForwarded, 'no native Agent event may continue')
+assert.equal(statCalls, beforeSpawnStats, 'denial does not inspect requested filesystem paths')
 // A turn starts while the final native-dispatch identity read is awaiting.
 await fire('command.run', { command: 'compact-seat' })
 const entered = new Promise(resolve => { identityEntered = resolve })

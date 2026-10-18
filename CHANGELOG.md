@@ -3,6 +3,20 @@
 User-facing changes are grouped by version using [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Historical source landing dates below are not reconstructed publication timestamps.
 
+## [1.0.24] — Unreleased
+
+### Fixed
+- Native `Agent()` subagents are deliberately closed. The refusal explains the
+  visible named `liteharness spawn --split` path instead of teaching tier/model
+  retries; scouts/critics use Sonnet 5.5 and grunt builders use Haiku 5.5 unless
+  the task explicitly selects another model.
+- Preserve human-only terminal closure and leader-owned named resume instructions
+  while removing contradictory native-Agent/default-headless examples.
+- Preserve literal owned worktree paths in the PowerShell launch example,
+  including smart single quotation marks. Parser-backed checks invoke no command.
+- The deliberately removed native tool guard stays removed. No installation,
+  active-session reload, or publication is implied by this source candidate.
+
 ## [1.0.22] — Unreleased
 
 ### Removed

@@ -104,7 +104,7 @@ class FirstRunIdentityTests(unittest.TestCase):
         with patch.object(versions, '_git', return_value='\n'.join(['.claude-plugin/plugin.json', '.claude-plugin/marketplace.json', '.codex-plugin/plugin.json'])), patch.object(versions, '_read', side_effect=lambda path, ref: (ROOT / path).read_text(encoding='utf-8')):
             sites = versions.collect(None)
         self.assertEqual(len(sites), 4)
-        self.assertEqual({value for _, _, value in sites}, {'1.0.22'})
+        self.assertEqual({value for _, _, value in sites}, {'1.0.24'})
         cache = (ROOT / 'docs/claude-cache-band.md').read_text(encoding='utf-8')
         self.assertIn('**1.0.19** is the local integration candidate', cache)
         self.assertNotIn('remains unchanged at all four', cache)

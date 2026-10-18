@@ -1,7 +1,6 @@
 // Pure data/brief rules only. All Mods API calls belong in register.mjs.
 export const FLEET_PANE = 'liteharness-fleet'
 export const FLEET_LIMIT = 100
-const TIERS = new Set(['orchestrator', 'leader', 'worker', 'thinker', 'reviewer'])
 const clean = value => String(value ?? '').replace(/[\x00-\x1f\x7f-\x9f]/g, ' ').slice(0, 512)
 
 export function fleetSnapshot(text) {
@@ -21,8 +20,6 @@ export function fleetSnapshot(text) {
     })), warnings: row.warnings.slice(0, 10).map(clean) }
 }
 
-export const SPAWN_MODELS = new Set(['claude-opus-5-5[1m]', 'claude-opus-5[1m]', 'claude-opus-4-8[1m]', 'claude-opus-4-6[1m]'])
-
 export function normalizedCwd(value) {
   if (typeof value !== 'string' || !value || /[\x00-\x1f]/.test(value)) return null
   const windows = /^[A-Za-z]:[\\/]/.test(value) || /^\\\\[^\\]+\\[^\\]+/.test(value)
@@ -33,15 +30,18 @@ export function normalizedCwd(value) {
 }
 
 export function spawnDenial(e, ownedCwd) {
-  // The host has no tier property. An explicit canonical brief line is required.
-  const tiers = typeof e.prompt === 'string' ? [...e.prompt.matchAll(/^Agent-Tier: ([a-z]+)\r?$/gm)] : []
-  if (tiers.length !== 1 || !TIERS.has(tiers[0][1]) || (e.prompt.match(/Agent-Tier:/g) || []).length !== 1) return 'Spawn requires exactly one Agent-Tier: orchestrator|leader|worker|thinker|reviewer brief line.'
-  if (!SPAWN_MODELS.has(e.model)) {
-    return 'Spawn requires an explicit full Claude model id ending in [1m]; aliases and inherit are refused.'
-  }
-  if (e.fork && e.parentModel !== e.model) return 'Fork ignores the requested model; its parent must match the explicit [1m] model id.'
-  const cwd = normalizedCwd(e.cwd)
-  if (!cwd) return 'Spawn requires an explicit absolute cwd without dot segments.'
-  if (!normalizedCwd(ownedCwd) || cwd !== normalizedCwd(ownedCwd)) return 'Spawn cwd must match the current owned session scope.'
-  return null
+  // Agent() is not a fleet launcher. Neither aliases nor resolved model IDs,
+  // brief metadata, forks or cwd changes can turn it into a visible split.
+  // Quote for PowerShell; never interpolate the untrusted requested cwd/brief.
+  const cwd = normalizedCwd(ownedCwd) && !/[\x7f-\x9f]/.test(ownedCwd)
+    ? ownedCwd : '<absolute-owned-worktree>'
+  const quotedCwd = "'" + cwd.replace(/['\u2018\u2019\u201a\u201b]/g, quote => quote + quote) + "'"
+  const model = typeof e?.model === 'string' ? JSON.stringify(clean(e.model)) : '(not supplied)'
+  return 'Agent() subagents are disabled by fleet policy. Builders, scouts and critics must be visible named splits; do not retry Agent() with different tier/model fields. ' +
+    'PowerShell scout command (replace the name and brief placeholders): ' +
+    'liteharness spawn --split --cli claude --tier scout --model \'claude-sonnet-5-5[1m]\' --cwd ' + quotedCwd +
+    ' --name \'<fresh-task-seat>\' --cognitive feynman --prompt \'I am here to <purpose>. Task-id: <card>. Read-only scout: <brief>\'. ' +
+    'Use --tier critic with Sonnet 5.5 for critics; grunt builders use --tier builder --model \'claude-haiku-5-5[1m]\' and a task-appropriate cognitive method. ' +
+    'If cwd is a placeholder, replace it with the absolute owned worktree. ' +
+    'Observed agent.spawn model: ' + model + '.'
 }

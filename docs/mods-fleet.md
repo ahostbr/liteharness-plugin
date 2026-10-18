@@ -37,25 +37,21 @@ warnings, not a fabricated empty healthy board.
 
 ## Spawn contract
 
-The installed 2.1.287 `agent.spawn` event exposes no harness tier property.
-Therefore the explicit tier is represented by exactly one canonical brief line:
+Native `Agent()` is deliberately closed, including Explore. No tier brief,
+model alias, resolved full ID, fork or cwd can turn it into a named visible fleet
+split. The `agent.spawn` hook always denies; it does not call the continuation,
+inspect requested paths, or launch a process. Do not retry with different fields.
 
-```text
-Agent-Tier: worker
-```
+Use the exact PowerShell `liteharness spawn --split` example in
+[the orchestration skill](../skills/ls-liteharness/SKILL.md#spawning-agents).
+Scouts/critics use Sonnet 5.5 and grunt builders use Haiku 5.5 unless a task
+explicitly selects another model. The launcher, not brief prose, owns actual
+identity, model policy, cwd and execution authority. Merge/human gates remain.
 
-Accepted tiers: orchestrator, leader, worker, thinker, reviewer. The caller must
-also supply one of the explicit `[1m]` Opus IDs from the existing launch alias
-catalog: `claude-opus-5-5[1m]`, `claude-opus-5[1m]`,
-`claude-opus-4-8[1m]`, or `claude-opus-4-6[1m]`. The absolute `cwd` must match
-the current session scope; both paths are resolved with `fs.stat(resolve:true)`
-and must resolve to the same non-link directory. Dot segments, aliases,
-`inherit`, omitted fields, and relative directories are refused. A fork ignores
-a requested model, so its parent must already match that explicit model.
-The host remains responsible for model availability. This validates declared
-metadata, **not trusted identity or privilege assignment**; injected prompt
-prose cannot confer authority. Validation is not spawn authorization, and does
-not override the common deny floor or merge/human gates.
+The denial quotes only the host-owned cwd and reports bounded inert text from
+actual event `e.model`. Tool input alone is not proof of whether the host forwards
+an alias or a resolved ID. Disk updates do not reload an already-running host;
+active loading/model representation require a separately authorized receiver probe.
 
 ## Integration and validation limits
 
