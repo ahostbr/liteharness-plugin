@@ -15,8 +15,8 @@ Historical source landing dates below are not reconstructed publication timestam
   scouts, critics); `Agent()` is for in-session helpers.
 - Preserve human-only terminal closure and leader-owned named resume instructions
   while removing contradictory native-Agent/default-headless examples.
-- Preserve literal owned worktree paths in the PowerShell launch example,
-  including smart single quotation marks. Parser-backed checks invoke no command.
+- The PowerShell `liteharness spawn --split` launch example in the orchestration
+  skill is preserved.
 - The deliberately removed native tool guard stays removed. No installation,
   active-session reload, or publication is implied by this source candidate.
 
