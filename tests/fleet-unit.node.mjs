@@ -1,18 +1,24 @@
 // Deterministic pure-rule fallback; NOT a Claude Mods host/runtime receipt.
 import assert from 'node:assert/strict'
 import { fleetSnapshot, spawnDenial } from '../hooks/mods/fleet.mjs'
-const valid = { prompt: 'Agent-Tier: worker\n', model: 'claude-opus-5-5[1m]', cwd: '/workspace', parentModel: 'claude-opus-5-5[1m]' }
-for (const model of [undefined, 'opus', 'sonnet', 'haiku', 'fable', 'inherit', 'claude-opus-5-5[1m]', 'claude-sonnet-5-5[1m]', 'claude-haiku-5-5[1m]']) {
-  const denial = spawnDenial({ ...valid, model }, valid.cwd)
-  assert.match(denial, /Agent\(\) subagents are disabled by fleet policy/)
-  assert.match(denial, /liteharness spawn --split/)
+const valid = { prompt: 'no tier line', model: 'claude-opus-5-5[1m]', cwd: '/workspace', parentModel: 'claude-opus-5-5[1m]' }
+// Allowed: the host's aliases and full ids (with or without [1m]), or no model at all; no Agent-Tier/Agent-Role line.
+for (const model of [undefined, null, 'sonnet', 'haiku', 'opus', 'claude-sonnet-5-5', 'claude-haiku-5-5', 'claude-opus-5-5',
+  'claude-sonnet-5-5[1m]', 'claude-haiku-5-5[1m]', 'claude-opus-5-5[1m]']) {
+  assert.equal(spawnDenial({ ...valid, model }, valid.cwd), null, 'allowed model ' + model)
 }
-for (const prompt of ['', 'Agent-Tier: unknown', 'Agent-Tier: worker\nAgent-Tier: leader']) assert.match(spawnDenial({ ...valid, prompt }, valid.cwd), /disabled by fleet policy/)
-for (const cwd of ['', '.', 'relative/path', 'C:relative', '/workspace\n']) assert.match(spawnDenial({ ...valid, cwd }, cwd), /<absolute-owned-worktree>/)
-for (const cwd of ['/workspace', 'C:\\workspace', '\\\\server\\share\\work']) assert.match(spawnDenial({ ...valid, cwd }, cwd), /disabled by fleet policy/)
-assert.match(spawnDenial({ ...valid, fork: true }, '/workspace'), /disabled by fleet policy/)
-assert.match(spawnDenial({ ...valid, cwd: '/other' }, '/workspace'), /--cwd '\/workspace'/)
-assert.match(spawnDenial(undefined), /disabled by fleet policy/)
+for (const prompt of [undefined, '', 'Agent-Tier: unknown', 'Agent-Tier: worker\nAgent-Tier: leader']) assert.equal(spawnDenial({ ...valid, prompt }, valid.cwd), null)
+assert.equal(spawnDenial({ model: undefined, prompt: undefined, cwd: undefined }, valid.cwd), null, 'host call with no model and no cwd')
+assert.equal(spawnDenial({ ...valid, fork: true }, valid.cwd), null)
+assert.equal(spawnDenial({ ...valid, cwd: 'C:\\Workspace\\' }, 'c:/workspace'), null, 'same Windows directory, other spelling')
+// Refused: not a Claude model, or a cwd that is not the session's own directory.
+for (const model of ['inherit', 'fable', 'gpt-5', 'claude-opus-4-6[1m]', 'Sonnet', '']) {
+  assert.match(spawnDenial({ ...valid, model }, valid.cwd), /model must be sonnet, haiku or opus/)
+}
+assert.match(spawnDenial({ ...valid, fork: true, parentModel: 'gpt-5' }, valid.cwd), /model must be/)
+for (const cwd of ['/other', 'relative/path', 'C:relative', '/workspace/../other']) assert.match(spawnDenial({ ...valid, cwd }, valid.cwd), /cwd must be the session/)
+for (const owned of [null, undefined, '', '.', 'relative/path', '/workspace\n']) assert.match(spawnDenial({ ...valid, cwd: undefined }, owned), /cwd must be the session/)
+assert.match(spawnDenial(undefined), /cwd must be the session/)
 const row = { schemaVersion: 1, sampledAt: 1000, agentCount: 102, taskCount: 1,
   agents: Array.from({ length: 102 }, () => ({ name: 'seat\u001b[31m', tier: 'worker' })),
   tasks: [{ id: 'T1', title: 'task', status: 'building', assignee: 'seat', tier: 2 }], warnings: [] }

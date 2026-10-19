@@ -138,9 +138,11 @@ Integrate canonical source before running python -m liteharness.cli update-scrip
 ## Spawning Agents
 
 **Fleet builders, scouts and critics always launch as visible named `--split` seats.**
-The plugin deliberately denies every native `Agent()` subagent, including Explore.
-Do not retry `Agent()` with another tier line, alias, full model ID or fork setting.
-Use the fleet launcher instead (PowerShell; replace the task/name/brief/worktree placeholders):
+Native `Agent()` subagents are for in-session helpers (including Explore). They run with
+`model` set to `sonnet`, `haiku` or `opus` (or the full `claude-*-5-5` id, with or without `[1m]`)
+or left out; no `Agent-Tier` line is needed. Any other model, or a cwd other than the
+session's own, is refused. A tier seat is never an `Agent()` call.
+Use the fleet launcher for tier seats (PowerShell; replace the task/name/brief/worktree placeholders):
 
 ```powershell
 liteharness spawn --split --cli claude --tier scout --model 'claude-sonnet-5-5[1m]' --cwd '<absolute-owned-worktree>' --name '<fresh-task-seat>' --cognitive feynman --prompt 'I am here to <purpose>. Task-id: <card>. Read-only scout: <brief>'
@@ -394,7 +396,7 @@ If hooks aren't firing, use this skill's manual commands as fallback.
 
 ### For visible named fleet seats (persistent):
 
-Native `Agent()` is closed, even for read-only investigation. Use the `--split`
+A persistent tier seat is never a native `Agent()` call. Use the `--split`
 command above and set `--cognitive <method>` so the harness injects the architecture.
 Require a purpose declaration and method-adoption ACK before accepting findings.
 Match the polymath to the task:

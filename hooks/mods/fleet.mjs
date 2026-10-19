@@ -29,19 +29,24 @@ export function normalizedCwd(value) {
   return path.replace(/\/+$/, '') || '/'
 }
 
+// The host's Agent tool passes a short alias or a full id, with or without [1m], or no model at all
+// (CLAUDE_CODE_SUBAGENT_MODEL then picks Sonnet). Anything else is not a Claude model and is refused.
+const SPAWN_FAMILIES = ['sonnet', 'haiku', 'opus']
+export const SPAWN_MODELS = new Set(SPAWN_FAMILIES.flatMap(family => [family, 'claude-' + family + '-5-5', 'claude-' + family + '-5-5[1m]']))
+
+// Returns the refusal text, or null when the Agent() call may run.
 export function spawnDenial(e, ownedCwd) {
-  // Agent() is not a fleet launcher. Neither aliases nor resolved model IDs,
-  // brief metadata, forks or cwd changes can turn it into a visible split.
-  // Quote for PowerShell; never interpolate the untrusted requested cwd/brief.
-  const cwd = normalizedCwd(ownedCwd) && !/[\x7f-\x9f]/.test(ownedCwd)
-    ? ownedCwd : '<absolute-owned-worktree>'
-  const quotedCwd = "'" + cwd.replace(/['\u2018\u2019\u201a\u201b]/g, quote => quote + quote) + "'"
-  const model = typeof e?.model === 'string' ? JSON.stringify(clean(e.model)) : '(not supplied)'
-  return 'Agent() subagents are disabled by fleet policy. Builders, scouts and critics must be visible named splits; do not retry Agent() with different tier/model fields. ' +
-    'PowerShell scout command (replace the name and brief placeholders): ' +
-    'liteharness spawn --split --cli claude --tier scout --model \'claude-sonnet-5-5[1m]\' --cwd ' + quotedCwd +
-    ' --name \'<fresh-task-seat>\' --cognitive feynman --prompt \'I am here to <purpose>. Task-id: <card>. Read-only scout: <brief>\'. ' +
-    'Use --tier critic with Sonnet 5.5 for critics; grunt builders use --tier builder --model \'claude-haiku-5-5[1m]\' and a task-appropriate cognitive method. ' +
-    'If cwd is a placeholder, replace it with the absolute owned worktree. ' +
-    'Observed agent.spawn model: ' + model + '.'
+  // A fork inherits its parent's model, so the parent's model is checked too.
+  for (const model of [e?.model, e?.fork ? e.parentModel : undefined]) {
+    if (model !== undefined && model !== null && !SPAWN_MODELS.has(model)) {
+      return 'Agent() model must be sonnet, haiku or opus (short name or full id, with or without [1m]) or omitted; refused ' +
+        JSON.stringify(clean(model)) + '.'
+    }
+  }
+  // The host's Agent tool has no cwd input: a call without one runs in the session's own directory,
+  // which is the only directory this check allows. Never echo the requested cwd.
+  const owned = normalizedCwd(ownedCwd)
+  const cwd = normalizedCwd(e?.cwd || ownedCwd)
+  if (!owned || !cwd || cwd !== owned) return "Agent() cwd must be the session's own directory; a foreign or unreadable cwd is refused."
+  return null
 }

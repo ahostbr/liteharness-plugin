@@ -37,10 +37,13 @@ warnings, not a fabricated empty healthy board.
 
 ## Spawn contract
 
-Native `Agent()` is deliberately closed, including Explore. No tier brief,
-model alias, resolved full ID, fork or cwd can turn it into a named visible fleet
-split. The `agent.spawn` hook always denies; it does not call the continuation,
-inspect requested paths, or launch a process. Do not retry with different fields.
+Native `Agent()` subagents run, including Explore. The `agent.spawn` hook calls the
+continuation when the model is `sonnet`, `haiku`, `opus`, `claude-sonnet-5-5`,
+`claude-haiku-5-5` or `claude-opus-5-5` (each with or without `[1m]`) or absent, and
+the cwd is the session's own directory. No `Agent-Tier` / `Agent-Role` line is
+required. Any other model, or another cwd, is denied with a short reason that never
+echoes the requested cwd or the brief. The hook inspects no filesystem path and
+launches no process. An `Agent()` call is not a named visible fleet split.
 
 Use the exact PowerShell `liteharness spawn --split` example in
 [the orchestration skill](../skills/ls-liteharness/SKILL.md#spawning-agents).

@@ -13,7 +13,6 @@ let persistenceFailure = false
 let sid = 'seat'
 let compactCalls = 0
 let forwarded = 0
-let statFailure = false
 let statCalls = 0
 let blockNextIdentity = false
 let identityEntered
@@ -36,7 +35,7 @@ const $ = {
     if (persistenceFailure && key.startsWith('handoff.')) throw new Error('store unavailable')
     files.set(key, value)
   } },
-  fs: { write: async () => {}, stat: async () => { statCalls++; if (statFailure) throw new Error('missing'); return { kind: 'dir', isLink: false, realPath: '/workspace' } } },
+  fs: { write: async () => {}, stat: async () => { statCalls++; return { kind: 'dir', isLink: false, realPath: '/workspace' } } },
   process: { run: async argv => {
     assert.deepEqual(argv, ['python', '-m', 'liteharness.mod_fleet'])
     if (processFailure) return { exitCode: 1, stdout: '', stderr: 'unavailable' }
@@ -114,17 +113,27 @@ processFailure = true
 assert.match((await fire('command.run', { command: 'tick' })).text, /failed/)
 assert.match(text(await fire('ui.render', { component: 'Pane', requestId: 'liteharness-fleet' })), /previous snapshot/)
 processFailure = false
-const validSpawn = { prompt: 'Agent-Tier: worker\n', model: 'claude-opus-5-5[1m]', cwd: '/workspace', parentModel: 'claude-opus-5-5[1m]', fork: false }
+const validSpawn = { prompt: 'no tier line', model: 'claude-opus-5-5[1m]', cwd: '/workspace', parentModel: 'claude-opus-5-5[1m]', fork: false }
 const beforeSpawnForwarded = forwarded
 const beforeSpawnStats = statCalls
-for (const model of [undefined, 'opus', 'sonnet', 'haiku', 'fable', 'claude-opus-5-5[1m]', 'claude-sonnet-5-5[1m]']) {
-  assert.match((await fire('agent.spawn', { ...validSpawn, model, cwd: '/other' })).deny, /disabled by fleet policy/)
+// Allowed Agent() calls reach the host's continuation unchanged: aliases, full ids with/without [1m], no model, no role line.
+const allowedModels = [undefined, 'opus', 'sonnet', 'haiku', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5',
+  'claude-opus-5-5[1m]', 'claude-sonnet-5-5[1m]', 'claude-haiku-5-5[1m]']
+for (const model of allowedModels) {
+  const event = { ...validSpawn, model }
+  assert.equal(await fire('agent.spawn', event), event, 'allowed spawn must continue with its own event: ' + model)
 }
-statFailure = true
-assert.match((await fire('agent.spawn', validSpawn)).deny, /disabled by fleet policy/)
-statFailure = false
-assert.equal(forwarded, beforeSpawnForwarded, 'no native Agent event may continue')
-assert.equal(statCalls, beforeSpawnStats, 'denial does not inspect requested filesystem paths')
+assert.equal(forwarded, beforeSpawnForwarded + allowedModels.length, 'every allowed Agent() call continues exactly once')
+// Refused calls get a deny and never continue.
+const beforeRefused = forwarded
+for (const model of ['fable', 'inherit', 'gpt-5']) {
+  assert.match((await fire('agent.spawn', { ...validSpawn, model })).deny, /model must be sonnet, haiku or opus/)
+}
+for (const model of [undefined, 'sonnet']) {
+  assert.match((await fire('agent.spawn', { ...validSpawn, model, cwd: '/other' })).deny, /cwd must be the session/)
+}
+assert.equal(forwarded, beforeRefused, 'a refused Agent() call must not continue')
+assert.equal(statCalls, beforeSpawnStats, 'the guard does not inspect requested filesystem paths')
 // A turn starts while the final native-dispatch identity read is awaiting.
 await fire('command.run', { command: 'compact-seat' })
 const entered = new Promise(resolve => { identityEntered = resolve })

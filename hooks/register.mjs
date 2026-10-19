@@ -701,10 +701,11 @@ export function register(on, options) {
     return next(e)
   })
 
-  on('agent.spawn', async ($, e) => {
+  on('agent.spawn', async ($, e, next) => {
     let cwd = null
-    try { cwd = await $.session.cwd() } catch { /* Still deny with explicit cwd placeholder. */ }
-    return { deny: spawnDenial(e, cwd) }
+    try { cwd = await $.session.cwd() } catch { /* spawnDenial refuses a call whose owned cwd is unreadable. */ }
+    const denial = spawnDenial(e, cwd)
+    return denial ? { deny: denial } : next(e)
   })
 
   on('ui.render', { component: 'Pane', requestId: 'liteharness-fleet' }, async ($, e, next) => {
