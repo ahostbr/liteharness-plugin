@@ -29,3 +29,5 @@ prompts/cognitive-architectures/orchestrator/sentinel.md
 # ~/.claude/skills/ls-release-litesuite/.
 skills/ls-release-litesuite/
 **/.liteeditor/
+# paste_history hook state (written into each seat's cwd; blocks git worktree remove)
+.litesuite/theater/pastes/
