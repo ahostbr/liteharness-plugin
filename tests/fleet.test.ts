@@ -3,22 +3,22 @@ import { fleetSnapshot, spawnDenial } from '../hooks/mods/fleet.mjs'
 
 const VALID = { prompt: 'Task brief', model: 'claude-opus-5-5[1m]', cwd: '/workspace', fork: false, parentModel: 'claude-opus-5-5[1m]' }
 
-test('native Agent runs for the host model values and no role line; other models and foreign cwds are refused', () => {
-  for (const model of [undefined, 'opus', 'sonnet', 'haiku', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5',
-    'claude-opus-5-5[1m]', 'claude-sonnet-5-5[1m]', 'claude-haiku-5-5[1m]']) {
+test('native Agent runs for any model and no role line; a cwd outside the session directory is refused', () => {
+  for (const model of [undefined, 'opus', 'sonnet', 'haiku', 'fable', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5',
+    'claude-opus-5-5[1m]', 'claude-fable-5-1[1m]', 'inherit', 'gpt-5']) {
     expect(spawnDenial({ ...VALID, model }, VALID.cwd)).toBeNull()
   }
   for (const prompt of ['', 'Agent-Tier: unknown', 'Agent-Tier: worker\nAgent-Tier: leader']) {
     expect(spawnDenial({ ...VALID, prompt }, VALID.cwd)).toBeNull()
   }
-  expect(spawnDenial({ ...VALID, fork: true }, VALID.cwd)).toBeNull()
-  for (const model of ['fable', 'inherit', 'gpt-5']) {
-    expect(spawnDenial({ ...VALID, model }, VALID.cwd)).toMatch(/model must be sonnet, haiku or opus/)
-  }
+  expect(spawnDenial({ ...VALID, fork: true, parentModel: 'gpt-5' }, VALID.cwd)).toBeNull()
+  expect(spawnDenial({ ...VALID, cwd: '/workspace/.claude/worktrees/agent-x' }, '/workspace')).toBeNull()
   for (const cwd of ['', '.', 'relative/path', 'C:relative', '/workspace\n', '/workspace/../other']) {
     expect(spawnDenial({ ...VALID, cwd }, cwd)).toMatch(/cwd must be the session/)
   }
-  expect(spawnDenial({ ...VALID, cwd: '/other' }, '/workspace')).toMatch(/cwd must be the session/)
+  for (const cwd of ['/other', '/workspace-evil', '/workspace-evil/x']) {
+    expect(spawnDenial({ ...VALID, cwd }, '/workspace')).toMatch(/cwd must be the session/)
+  }
 })
 
 test('fleet snapshot is bounded, counted and display-safe', () => {

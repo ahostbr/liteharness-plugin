@@ -38,12 +38,14 @@ warnings, not a fabricated empty healthy board.
 ## Spawn contract
 
 Native `Agent()` subagents run, including Explore. The `agent.spawn` hook calls the
-continuation when the model is `sonnet`, `haiku`, `opus`, `claude-sonnet-5-5`,
-`claude-haiku-5-5` or `claude-opus-5-5` (each with or without `[1m]`) or absent, and
-the cwd is the session's own directory. No `Agent-Tier` / `Agent-Role` line is
-required. Any other model, or another cwd, is denied with a short reason that never
-echoes the requested cwd or the brief. The hook inspects no filesystem path and
-launches no process. An `Agent()` call is not a named visible fleet split.
+continuation for any model (the host passes `sonnet`, `opus`, `haiku`, `fable` or none) and
+needs no `Agent-Tier` / `Agent-Role` line. Its one check is the cwd: it must be the
+session's own directory or a descendant of it, which covers an `isolation: "worktree"`
+created under the session's repo. A sibling that merely shares the prefix
+(`C:/repo-evil` beside `C:/repo`), a parent, a relative path or a dot-segment path is
+denied with a short reason that never echoes the requested cwd or the brief. The hook
+inspects no filesystem path and launches no process. An `Agent()` call is not a named
+visible fleet split.
 
 Use the exact PowerShell `liteharness spawn --split` example in
 [the orchestration skill](../skills/ls-liteharness/SKILL.md#spawning-agents).
@@ -51,10 +53,12 @@ Scouts/critics use Sonnet 5.5 and grunt builders use Haiku 5.5 unless a task
 explicitly selects another model. The launcher, not brief prose, owns actual
 identity, model policy, cwd and execution authority. Merge/human gates remain.
 
-The denial quotes only the host-owned cwd and reports bounded inert text from
-actual event `e.model`. Tool input alone is not proof of whether the host forwards
-an alias or a resolved ID. Disk updates do not reload an already-running host;
-active loading/model representation require a separately authorized receiver probe.
+The denial quotes nothing from the call. What the host puts in `e.cwd` for an
+`isolation: "worktree"` call is not documented in the Mods API types (`agent.spawn`
+input has no isolation field; `cwd` is "the directory the subagent runs in when the
+call set one", undefined meaning the parent's), so the descendant rule is unobserved
+against a live isolation call. Disk updates do not reload an already-running host;
+a live receiver probe needs separate authorization.
 
 ## Integration and validation limits
 

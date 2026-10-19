@@ -6,13 +6,13 @@ Historical source landing dates below are not reconstructed publication timestam
 ## [1.0.24] — Unreleased
 
 ### Fixed
-- Native `Agent()` subagents run. The `agent.spawn` hook accepts `sonnet`, `haiku`,
-  `opus` or the full ids `claude-sonnet-5-5`, `claude-haiku-5-5`, `claude-opus-5-5`
-  (each with or without `[1m]`), or no model at all; there is no `Agent-Tier` /
-  `Agent-Role` line requirement. Any other model is refused, and the cwd check
-  stays: a call whose cwd is not the session's own directory is refused. Visible
-  named `liteharness spawn --split` seats stay the rule for tier seats (builders,
-  scouts, critics); `Agent()` is for in-session helpers.
+- Native `Agent()` subagents run. The `agent.spawn` hook lets any model through (the
+  host passes `sonnet`, `opus`, `haiku`, `fable` or none) and has no `Agent-Tier` /
+  `Agent-Role` line requirement. The cwd check stays, widened to the session's own
+  directory or anything inside it, so an `isolation: "worktree"` under the repo runs;
+  a foreign path or a sibling that only shares the prefix is refused. Visible named
+  `liteharness spawn --split` seats stay the rule for tier seats (builders, scouts,
+  critics); `Agent()` is for in-session helpers.
 - Preserve human-only terminal closure and leader-owned named resume instructions
   while removing contradictory native-Agent/default-headless examples.
 - The PowerShell `liteharness spawn --split` launch example in the orchestration

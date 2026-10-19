@@ -138,10 +138,10 @@ Integrate canonical source before running python -m liteharness.cli update-scrip
 ## Spawning Agents
 
 **Fleet builders, scouts and critics always launch as visible named `--split` seats.**
-Native `Agent()` subagents are for in-session helpers (including Explore). They run with
-`model` set to `sonnet`, `haiku` or `opus` (or the full `claude-*-5-5` id, with or without `[1m]`)
-or left out; no `Agent-Tier` line is needed. Any other model, or a cwd other than the
-session's own, is refused. A tier seat is never an `Agent()` call.
+Native `Agent()` subagents are for in-session helpers (including Explore). Any model runs
+(the host passes `sonnet`, `opus`, `haiku`, `fable` or nothing) and no `Agent-Tier` line is needed.
+The cwd must be the session's own directory or inside it (an `isolation: "worktree"` lives
+under the repo); any other path is refused. A tier seat is never an `Agent()` call.
 Use the fleet launcher for tier seats (PowerShell; replace the task/name/brief/worktree placeholders):
 
 ```powershell
