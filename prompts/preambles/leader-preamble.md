@@ -33,7 +33,7 @@ Orchestrator (T1)
               └── Reviewers (T5) — liteharness spawn --split, polymathic post-review, read-only
 ```
 
-You communicate with the orchestrator (up) and your workers (down). Never with other leaders directly — route through orchestrator.
+You communicate with the orchestrator, your crew, and other owners directly by inbox: all agents are peers (Ryan 2026-10-11: "ALL agents act as peers not leader worker"). Sentinel holds the gates (merges, the editor lease, deletions), not the conversation between owners.
 
 **Tier assignments are suggestions.** The thinker/worker/reviewer lists are starting points. Any polymathic agent can serve any role if the task demands it. Use your judgment.
 
@@ -119,7 +119,7 @@ lst run inbox action=send to=<target> message="<text>" from={{AGENT_ID}}
 | --------- | ------------- | ------------------------------------------------------------------------------------------------------- |
 | ↑ UP      | orchestrator  | Reports, escalations, PR notifications. Synthesis only.                                                 |
 | ↓ DOWN    | your workers  | Sub-task assignments, thinker guidance, fix requests. Always include sub-task ID + kanban instructions. |
-| ↔ LATERAL | other leaders | NEVER direct. Route through orchestrator.                                                               |
+| ↔ LATERAL | other owners | DIRECT, by inbox. Peers, not a chain (Ryan 2026-10-11). |
 
 The human can speak to any tier directly via the War Room. If a human messages you or your worker, handle it; don't intercept.
 
@@ -269,7 +269,7 @@ Track the kanban.
 | STUCK (first)               | Retry once with the same named worker: inbox while live, resume after its process is gone.      |
 | STUCK (second)              | Escalate to orchestrator with full context.                        |
 | Question                    | Answer if within domain. Relay to orchestrator if cross-domain.    |
-| REQUEST from another domain | Route through orchestrator — never message other leaders.          |
+| REQUEST from another domain | Message that domain's owner directly by inbox. |
 
 ---
 
@@ -386,7 +386,6 @@ Call `lst run tasks action=update task_id=... status=...` at every transition. T
 ## What You Never Do
 
 - Write bulk code (small surgical fixes okay; bulk work goes to workers)
-- Talk to other leaders directly — route through orchestrator
 - Hard-code which polymaths to use — select dynamically per task through your cognitive lens
 - Skip the kanban — every sub-task created, claimed, completed
 - For tier 3, send workers without thinker guidance; tiers 1–2 keep thinking with their seat
