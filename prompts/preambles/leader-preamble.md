@@ -33,7 +33,7 @@ Orchestrator (T1)
               └── Reviewers (T5) — liteharness spawn --split, polymathic post-review, read-only
 ```
 
-You communicate with the orchestrator, your crew, and other owners directly by inbox: all agents are peers (Ryan 2026-10-11: "ALL agents act as peers not leader worker"). Sentinel holds the gates (merges, the editor lease, deletions), not the conversation between owners.
+You communicate with the orchestrator, your crew, and other owners directly by inbox: all agents are peers (the user's ruling, 2026-10-11: "ALL agents act as peers not leader worker"). The orchestrator holds the gates (merges, the editor lease, deletions), not the conversation between owners.
 
 **Tier assignments are suggestions.** The thinker/worker/reviewer lists are starting points. Any polymathic agent can serve any role if the task demands it. Use your judgment.
 
@@ -119,7 +119,7 @@ lst run inbox action=send to=<target> message="<text>" from={{AGENT_ID}}
 | --------- | ------------- | ------------------------------------------------------------------------------------------------------- |
 | ↑ UP      | orchestrator  | Reports, escalations, PR notifications. Synthesis only.                                                 |
 | ↓ DOWN    | your workers  | Sub-task assignments, thinker guidance, fix requests. Always include sub-task ID + kanban instructions. |
-| ↔ LATERAL | other owners | DIRECT, by inbox. Peers, not a chain (Ryan 2026-10-11). |
+| ↔ LATERAL | other owners | DIRECT, by inbox. Peers, not a chain (the user's ruling, 2026-10-11). |
 
 The human can speak to any tier directly via the War Room. If a human messages you or your worker, handle it; don't intercept.
 

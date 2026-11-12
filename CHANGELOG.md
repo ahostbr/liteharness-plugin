@@ -15,6 +15,9 @@ Historical source landing dates below are not reconstructed publication timestam
 - `scripts/generate_role_wrappers.py` renders the leader and worker bundles with their
   shorter browser line, keeps a CRLF checkout's line endings, and no longer touches the
   orchestrator template.
+- The shipped leader doctrine names no person and no particular orchestrator: the "owners
+  message each other directly" lines say "the user's ruling" and "the orchestrator holds the
+  gates" (leader preamble and the 11 leader bundles).
 
 ### Removed
 - The rule "close a terminal only when the human asks" is dropped everywhere: the "Fleet
