@@ -48,6 +48,7 @@ yes, it belongs in a message, a commit body, or a doc, addressed to whoever must
 (token also on disk at `~/.litesuite/bridge-token`). Canvas, terminal, browser and editor
 control. Reachable whenever LiteSuite is running, including from a standalone CLI session;
 inside a LiteSuite pane the full endpoint map is printed at session start.
+Inside a LiteSuite pane: show finished results with the canvas tool (`canvas-display.md`, `canvas action=help`).
 
 ## Named persistent fleet seats
 

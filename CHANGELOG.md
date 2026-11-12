@@ -6,6 +6,10 @@ Historical source landing dates below are not reconstructed publication timestam
 ## [1.0.24] — Unreleased
 
 ### Fixed
+- The canvas pointer is back in the shipped prompts. `bootstrap-harness.md` and the worker
+  and leader preambles each say, scoped to a seat inside a LiteSuite pane, to show finished
+  results with the canvas tool and name `canvas-display.md`. `canvas-display.md` shipped all
+  along, but nothing a standalone seat is given pointed at it.
 - Native `Agent()` subagents run. The `agent.spawn` hook lets any model through (the
   host passes `sonnet`, `opus`, `haiku`, `fable` or none) and has no `Agent-Tier` /
   `Agent-Role` line requirement. The cwd check stays, widened to the session's own

@@ -312,6 +312,7 @@ liteharness spawn --split --pane <fleet-paneId> --cwd <repo root> --tier reviewe
 {"url": ...}` to display, `/browser/*` endpoints (screenshot, javascript,
   console) to measure. NEVER claude-in-chrome MCP tools: those drive the HUMAN'S
   Chrome, outside the canvas, invisible to the run's record.
+- Inside a LiteSuite pane: show finished results with the canvas tool (`canvas-display.md`, `canvas action=help`).
 
 ---
 

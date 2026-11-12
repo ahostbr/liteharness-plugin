@@ -270,5 +270,6 @@ When running inside LiteSuite (detected via `LITESUITE_BRIDGE_TOKEN` env var):
 - Your terminal appears as a canvas pane in the War Room — the human can see your work
 - Use `browser` tool to show websites to the human via the built-in BrowserView
 - Use `editor` tool to open files in LiteEditor for the human to inspect
+- Inside a LiteSuite pane: show finished results with the canvas tool (`canvas-display.md`, `canvas action=help`).
 
 ---
