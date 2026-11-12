@@ -91,12 +91,14 @@ test('shipped skill has no native Agent examples or default-headless dispatch', 
   assert.doesNotMatch(skill, /Agent\(\{|ALWAYS headless PTY by default|Default is always headless|For Agent\(\) sub-agents/)
   assert.match(skill, /Fleet builders, scouts and critics always launch as visible/)
 })
-test('human-close and leader-resume safeguards survive launch-policy edits', () => {
+test('the leader-resume safeguard survives launch-policy edits; the dropped close rule stays dropped', () => {
   const skill = readFileSync(resolve(plugin, 'skills/ls-liteharness/SKILL.md'), 'utf8')
-  for (const safeguard of ['liteharness pty-kill <agent-id>                      # close only when the human asks',
-    '**Closing terminals:** Close a terminal only when the human explicitly asks.',
-    'Only the leader resumes the same named seat after its process is gone:',
-    '| "close that terminal" | `liteharness pty-kill <id>` when the human explicitly asks |']) assert.ok(skill.includes(safeguard))
+  assert.ok(skill.includes('Only the leader resumes the same named seat after its process is gone:'))
+  // The owner dropped "close a terminal only when the human asks" everywhere (2026-11-12). The command stays documented.
+  assert.ok(skill.includes('liteharness pty-kill <agent-id>'))
+  for (const dropped of ['only when the human asks', 'when the human explicitly asks', '**Closing terminals:**']) {
+    assert.ok(!skill.includes(dropped), dropped)
+  }
 })
 test('withdrawn tool guard is not registered; actual fleet lifecycle still is', () => {
   const names = []

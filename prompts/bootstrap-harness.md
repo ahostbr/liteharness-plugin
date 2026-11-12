@@ -55,15 +55,10 @@ Inside a LiteSuite pane: show finished results with the canvas tool (`canvas-dis
 A name identifies one agent and its durable conversation. Follow-up work returns
 to that same named seat. Message a live seat by inbox; resume it only after its
 process is gone: `liteharness spawn --split --resume <Name>`.
-Never replace a seat under a fresh name or self-retire. Every fresh fleet spawn
+Never replace a seat under a fresh name. Every fresh fleet spawn
 has an explicit `--cwd <repo root>`; `liteharness names --list` shows the saved
-identity, conversation and cwd. Lifecycle changes require the leader/orchestrator.
+identity, conversation and cwd.
 
-**Fleet lifecycle safety:**
-Close a terminal only when the human explicitly asks.
-Use fresh session and harness identity evidence for that authorized action.
-A hidden pane or completed task is not permission to close a seat.
-Report refusals without bypassing them.
 
 
 ## Per-card process and thinking
@@ -76,7 +71,7 @@ credits and any active model/thinking floor. Pass both choices with the trunk.
 |---|---|---|
 | 1 — Quick | One seat builds/self-reviews; leader reads diff | 30 minutes |
 | 2 — Standard | One seat thinks/builds/self-reviews; leader reviews diff, at most one fix round | 2 hours |
-| 3 — Deep | Worker + thinker(s) + separate visible named reviewer with VERDICT | Half a day |
+| 3 — Deep | Worker + thinker(s); a separate visible named reviewer ONLY when the user's own words on the card ask for a review | Half a day |
 
 There is **no time limit**. Expected durations are alerts for the orchestrator,
 not deadlines or permission to expand scope. At every tier check the current
@@ -89,12 +84,17 @@ Worktree edits, tests and commits are reversible and autonomous within the agree
 scope. Review gates the merge, not an own-worktree commit. Before each merge,
 compare the current human words/requirements against the diff and evidence:
 one-line intent check for process tiers 1–2; full intent gate for tier 3.
-Required review, intent approval and release approval are distinct gates.
-A merged candidate remains **reviewing** until the human has seen the result;
-APPROVE, candidate-ready, a successful merge or model judgement is not Done.
+Required review and intent approval are distinct gates. Release approval, the final
+develop → master PR, follows the HITL mode: with HITL ON the human approves and merges it;
+with HITL OFF (fully autonomous) no human gates it and the orchestrator completes it once
+the per-merge intent checks have passed.
+A merged candidate remains **reviewing** until the human has seen the result (HITL ON);
+APPROVE, candidate-ready, a successful merge or model judgement is not Done. With HITL OFF
+(fully autonomous) there is no human look: the orchestrator completes the card once review,
+validation and the per-merge intent checks have passed.
 Editor restart/rebuild, deletions, downloads, VRAM loads, external side effects
 and public pushes retain their separate approval gates. Autonomy/HITL mode never
-bypasses a required merge intent gate or human-look completion condition.
+bypasses a required merge intent gate; only HITL ON adds the human-look completion condition.
 
 ## Task Board
 
@@ -125,5 +125,5 @@ Agent-ID: <your-agent-id>
 
 ## HITL
 
-Per task. ON — the human is notified only at the final PR, not during work.
-OFF — reversible preparation proceeds within scope; required review, intent and human-look gates still apply.
+Per task. ON — the human approves and merges the final develop → master PR and is not pinged during work.
+OFF (fully autonomous) — no human gates the final PR: the orchestrator completes it once the per-merge intent checks pass. Reversible preparation proceeds within scope; required review and intent gates still apply; there is no human-look gate.

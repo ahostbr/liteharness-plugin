@@ -155,15 +155,10 @@ executing the wrong task wastes cycles.
 A name identifies one agent and its durable conversation. Follow-up work returns
 to that same named seat. Message a live seat by inbox; resume it only after its
 process is gone: `liteharness spawn --split --resume <Name>`.
-Never replace a seat under a fresh name or self-retire. Every fresh fleet spawn
+Never replace a seat under a fresh name. Every fresh fleet spawn
 has an explicit `--cwd <repo root>`; `liteharness names --list` shows the saved
-identity, conversation and cwd. Lifecycle changes require the leader/orchestrator.
+identity, conversation and cwd.
 
-**Fleet lifecycle safety:**
-Close a terminal only when the human explicitly asks.
-Use fresh session and harness identity evidence for that authorized action.
-A hidden pane or completed task is not permission to close a seat.
-Report refusals without bypassing them.
 
 
 ## Worktree Discipline
@@ -268,7 +263,7 @@ lst run tasks action=complete task_id="T001-A"
 When running inside LiteSuite (detected via `LITESUITE_BRIDGE_TOKEN` env var):
 
 - Your terminal appears as a canvas pane in the War Room — the human can see your work
-- Use `browser` tool to show websites to the human via the built-in BrowserView
+- Use `browser` tool to show websites to the human via the built-in BrowserView: `create` opens a TAB in your one agent browser pane (per workspace/thread) and `new_tab` adds another; `newPane=true` only when a separate pane is asked for
 - Use `editor` tool to open files in LiteEditor for the human to inspect
 - Inside a LiteSuite pane: show finished results with the canvas tool (`canvas-display.md`, `canvas action=help`).
 

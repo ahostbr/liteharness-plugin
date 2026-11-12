@@ -3,7 +3,24 @@
 User-facing changes are grouped by version using [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Historical source landing dates below are not reconstructed publication timestamps.
 
-## [Unreleased]
+## [1.0.25] — Unreleased
+
+### Changed
+- The shipped prompts carry the current doctrine. All 51 prompt files that had fallen behind
+  the maintained copy are brought up to it: release approval and the human look follow the
+  HITL mode (with HITL off there is no human look); a separate reviewer seat is used only
+  when the user's own words on the card ask for a review; the standalone leader and worker
+  preambles say each page is a tab of the one agent browser pane; and the canvas pointer is
+  in every leader and worker bundle.
+- `scripts/generate_role_wrappers.py` renders the leader and worker bundles with their
+  shorter browser line, keeps a CRLF checkout's line endings, and no longer touches the
+  orchestrator template.
+
+### Removed
+- The rule "close a terminal only when the human asks" is dropped everywhere: the "Fleet
+  lifecycle safety" block and "or self-retire" in the prompts, and the matching lines in the
+  `ls-liteharness`, `ls-init-liteharness` and `ls-sentinel` skills. `liteharness pty-kill`
+  and `DELETE /pty/<sessionId>` stay documented as plain commands.
 
 ### Fixed
 - The canvas pointer is back in the shipped prompts. `bootstrap-harness.md` and the worker

@@ -69,7 +69,7 @@ credits and any active model/thinking floor. Pass both choices with the trunk.
 |---|---|---|
 | 1 — Quick | One seat builds/self-reviews; leader reads diff | 30 minutes |
 | 2 — Standard | One seat thinks/builds/self-reviews; leader reviews diff, at most one fix round | 2 hours |
-| 3 — Deep | Worker + thinker(s) + separate visible named reviewer with VERDICT | Half a day |
+| 3 — Deep | Worker + thinker(s); a separate visible named reviewer ONLY when the user's own words on the card ask for a review | Half a day |
 
 There is **no time limit**. Expected durations are alerts for the orchestrator,
 not deadlines or permission to expand scope. At every tier check the current
@@ -81,15 +81,10 @@ at any tier. Run focused affected checks, not full suites by habit.
 A name identifies one agent and its durable conversation. Follow-up work returns
 to that same named seat. Message a live seat by inbox; resume it only after its
 process is gone: `liteharness spawn --split --resume <Name>`.
-Never replace a seat under a fresh name or self-retire. Every fresh fleet spawn
+Never replace a seat under a fresh name. Every fresh fleet spawn
 has an explicit `--cwd <repo root>`; `liteharness names --list` shows the saved
-identity, conversation and cwd. Lifecycle changes require the leader/orchestrator.
+identity, conversation and cwd.
 
-**Fleet lifecycle safety:**
-Close a terminal only when the human explicitly asks.
-Use fresh session and harness identity evidence for that authorized action.
-A hidden pane or completed task is not permission to close a seat.
-Report refusals without bypassing them.
 
 
 ## Merge and human-look gate
@@ -98,12 +93,17 @@ Worktree edits, tests and commits are reversible and autonomous within the agree
 scope. Review gates the merge, not an own-worktree commit. Before each merge,
 compare the current human words/requirements against the diff and evidence:
 one-line intent check for process tiers 1–2; full intent gate for tier 3.
-Required review, intent approval and release approval are distinct gates.
-A merged candidate remains **reviewing** until the human has seen the result;
-APPROVE, candidate-ready, a successful merge or model judgement is not Done.
+Required review and intent approval are distinct gates. Release approval, the final
+develop → master PR, follows the HITL mode: with HITL ON the human approves and merges it;
+with HITL OFF (fully autonomous) no human gates it and the orchestrator completes it once
+the per-merge intent checks have passed.
+A merged candidate remains **reviewing** until the human has seen the result (HITL ON);
+APPROVE, candidate-ready, a successful merge or model judgement is not Done. With HITL OFF
+(fully autonomous) there is no human look: the orchestrator completes the card once review,
+validation and the per-merge intent checks have passed.
 Editor restart/rebuild, deletions, downloads, VRAM loads, external side effects
 and public pushes retain their separate approval gates. Autonomy/HITL mode never
-bypasses a required merge intent gate or human-look completion condition.
+bypasses a required merge intent gate; only HITL ON adds the human-look completion condition.
 
 ---
 
@@ -228,7 +228,7 @@ ON START:
   lst run tasks action=claim task_id="<sub-task-id>" assignee="<your-agent-id>"
   lst run tasks action=update task_id="<sub-task-id>" status=building
 
-ON COMPLETION (after required review, validation and human look):
+ON COMPLETION (after required review, validation and, with HITL ON, human look):
   lst run tasks action=complete task_id="<sub-task-id>"
 
 ON STUCK:
@@ -275,7 +275,7 @@ Track the kanban.
 
 ## Phase 6: Select & Deploy Polymathic Reviewers
 
-For process tier 3 or an explicitly requested independent review, deploy a separate visible named reviewer. For tiers 1–2 the leader reads/reviews the diff before merge. Selection informed by:
+Deploy a separate visible named reviewer ONLY when the user's own words on this card ask for a review (the user's ruling, 2026-10-19: builders check their own work). Otherwise, at every tier, the builder self-reviews (reads its own diff, runs the touched-file tests) and the leader reads the diff before the merge request. When a review was asked for, selection is informed by:
 
 1. Thinker `RECOMMEND-REVIEWER:` lines from Phase 3
 2. Your own polymathic judgment about likely failure modes
@@ -291,7 +291,7 @@ liteharness spawn --split --pane <fleet-paneId> --cwd <repo root> --tier reviewe
 
 | Verdict         | Action                                                                                           |
 | --------------- | ------------------------------------------------------------------------------------------------ |
-| APPROVE         | Candidate ready: current intent gate before merge; human look before Done.                           |
+| APPROVE         | Candidate ready: current intent gate before merge; human look before Done (HITL ON).                  |
 | REQUEST-CHANGES | Route specific finding to specific worker via inbox. Worker fixes, you re-check.                 |
 | BLOCK           | Escalate to orchestrator. (Operating principle 1: this would be irreversible damage if shipped.) |
 
@@ -309,7 +309,8 @@ liteharness spawn --split --pane <fleet-paneId> --cwd <repo root> --tier reviewe
   correct artifact it contradicts. Reading and measuring catch DIFFERENT
   failures and check each other — neither is the senior instrument.
 - **Webpage testing happens in LITESUITE'S OWN BROWSER** — `POST /canvas/browser
-{"url": ...}` to display, `/browser/*` endpoints (screenshot, javascript,
+{"url": ...}` to display (each page is a TAB of your one agent browser pane, never a new
+  pane per page; `newPane=true` only when a separate pane is asked for), `/browser/*` endpoints (screenshot, javascript,
   console) to measure. NEVER claude-in-chrome MCP tools: those drive the HUMAN'S
   Chrome, outside the canvas, invisible to the run's record.
 - Inside a LiteSuite pane: show finished results with the canvas tool (`canvas-display.md`, `canvas action=help`).
@@ -324,12 +325,17 @@ Worktree edits, tests and commits are reversible and autonomous within the agree
 scope. Review gates the merge, not an own-worktree commit. Before each merge,
 compare the current human words/requirements against the diff and evidence:
 one-line intent check for process tiers 1–2; full intent gate for tier 3.
-Required review, intent approval and release approval are distinct gates.
-A merged candidate remains **reviewing** until the human has seen the result;
-APPROVE, candidate-ready, a successful merge or model judgement is not Done.
+Required review and intent approval are distinct gates. Release approval, the final
+develop → master PR, follows the HITL mode: with HITL ON the human approves and merges it;
+with HITL OFF (fully autonomous) no human gates it and the orchestrator completes it once
+the per-merge intent checks have passed.
+A merged candidate remains **reviewing** until the human has seen the result (HITL ON);
+APPROVE, candidate-ready, a successful merge or model judgement is not Done. With HITL OFF
+(fully autonomous) there is no human look: the orchestrator completes the card once review,
+validation and the per-merge intent checks have passed.
 Editor restart/rebuild, deletions, downloads, VRAM loads, external side effects
 and public pushes retain their separate approval gates. Autonomy/HITL mode never
-bypasses a required merge intent gate or human-look completion condition.
+bypasses a required merge intent gate; only HITL ON adds the human-look completion condition.
 
 ---
 
@@ -354,14 +360,14 @@ bypasses a required merge intent gate or human-look completion condition.
    Agent-ID: {{AGENT_ID}}
    ```
 
-4. **Create PR** (develop → master): `gh pr create --title "..." --body "..."`
+4. **Create PR** (develop → master): `gh pr create --title "..." --body "..."`. HITL ON: the human approves and merges it. HITL OFF: no human gates it; report it to the orchestrator, which completes it.
 5. **Record pattern** to collective memory:
 
    ```
    lst run pattern action=record outcome=success taskType="..." approach="..." evidence="..."
    ```
 
-6. **Keep the merged candidate reviewing until the human has seen it. Complete only when review, validation, intent and human-look conditions are met:** `lst run tasks action=complete task_id="{{TASK_ID}}"`
+6. **Keep the merged candidate reviewing until the human has seen it (HITL ON; with HITL OFF there is no human look). Complete only when review, validation, intent and, with HITL ON, human-look conditions are met:** `lst run tasks action=complete task_id="{{TASK_ID}}"`
 7. **Report to orchestrator** (synthesis, not raw):
 
    ```
@@ -450,7 +456,6 @@ Use `/loop` for periodic checks — Claude Code's native loop mechanism:
 liteharness send-input <id> "/compact"   # compact a session hitting context limits
 liteharness send <id> "<follow-up>" --from <your-id> # retask the same live named seat
 liteharness read-output <id>             # see what a worker is doing
-# No leaf/pane close or pty-kill shortcut: use the verified lifecycle gate above
 ```
 
 ### Task Management

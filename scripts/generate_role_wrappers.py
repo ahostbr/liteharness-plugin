@@ -4,6 +4,12 @@ Standalone preambles are the public source of role glue. Existing public pure
 METHOD files locate the unchanged bundle suffix, including methods without a
 POLYMATHIC heading. No personal orchestrator sources are read. Run from any cwd;
 use --check in validation.
+
+The orchestrator template (cognitive-architectures/orchestrator/default.md) is
+maintained by hand and is not touched here. This script used to copy one
+"Fleet lifecycle safety" paragraph into it from orchestrator-role.md; that
+paragraph was dropped from the doctrine (2026-11-12), so there is nothing left
+to project.
 """
 from __future__ import annotations
 
@@ -13,6 +19,23 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TIERS = {"leader": "leaders", "worker": "workers", "thinker": "thinkers", "reviewer": "reviewers"}
+
+# The leader and worker bundles carry a shorter browser line than their standalone
+# preambles. LiteSuite's generator, which writes the same files from its own templates,
+# keeps the two wordings distinct on purpose (its T0556 note), and its text is the
+# reference for this repo. So a bundle rendered from a preamble gets the bundle wording
+# back: (wording in the standalone preamble, wording in the bundle).
+BUNDLE_WORDING: dict[str, tuple[str, str]] = {
+    "leader": (
+        '{"url": ...}` to display (each page is a TAB of your one agent browser pane, never a new\n'
+        "  pane per page; `newPane=true` only when a separate pane is asked for), `/browser/*` endpoints (screenshot, javascript,\n",
+        '{"url": ...}` to display, `/browser/*` endpoints (screenshot, javascript,\n',
+    ),
+    "worker": (
+        "- Use `browser` tool to show websites to the human via the built-in BrowserView: `create` opens a TAB in your one agent browser pane (per workspace/thread) and `new_tab` adds another; `newPane=true` only when a separate pane is asked for\n",
+        "- Use `browser` tool to show websites to the human via the built-in BrowserView\n",
+    ),
+}
 
 
 def method_slice(raw: bytes, pure: bytes) -> bytes:
@@ -27,7 +50,8 @@ def method_slice(raw: bytes, pure: bytes) -> bytes:
 
 def render_bundle(raw: bytes, pure: bytes, preamble: str, role: str) -> bytes:
     method = method_slice(raw, pure)
-    wrapper = raw[:-len(method)].decode("utf-8").replace("\r\n", "\n")
+    head = raw[:-len(method)]
+    wrapper = head.decode("utf-8").replace("\r\n", "\n")
     # Keep the existing METHOD-only void clause, including the polymath name.
     prefix, separator, old = wrapper.partition("\n\n# ")
     if not separator or "METHOD FILE" not in prefix or "VOID CLAUSE" not in prefix:
@@ -41,33 +65,21 @@ def render_bundle(raw: bytes, pure: bytes, preamble: str, role: str) -> bytes:
     if not separator:
         raise ValueError("preamble has no generated header")
     body = body.lstrip("\n")
+    if role in BUNDLE_WORDING:
+        standalone, bundled = BUNDLE_WORDING[role]
+        if body.count(standalone) > 1:
+            raise ValueError(f"{role} preamble has its browser line more than once")
+        body = body.replace(standalone, bundled)
     body = body.replace(f"# {role.upper()} ROLE —", f"# {title} —")
     body = body.replace("your assigned polymathic cognitive architecture (composed separately)", f"{name}'s cognitive architecture")
     body = body.replace("your assigned polymath", name)
+    rendered = prefix + "\n\n" + body.rstrip("\n") + "\n\n"
+    # A checkout with CRLF line endings keeps them: the wrapper is written the way the file
+    # already is, or every bundle would read as stale on such a checkout.
+    if b"\r\n" in head:
+        rendered = rendered.replace("\n", "\r\n")
     # METHOD is appended as original bytes, including its original final newline.
-    return (prefix + "\n\n" + body.rstrip("\n") + "\n\n").encode("utf-8") + method
-
-
-def lifecycle_span(raw: bytes) -> tuple[int, int]:
-    """Locate one public lifecycle paragraph, preserving all surrounding bytes."""
-    marker = b"**Fleet lifecycle safety:**"
-    if raw.count(marker) != 1:
-        raise ValueError("expected one fleet lifecycle safety block")
-    start = raw.index(marker)
-    ending = re.search(rb"\r?\n\r?\n", raw[start:])
-    if ending is None:
-        raise ValueError("lifecycle block has no paragraph boundary")
-    return start, start + ending.start()
-
-
-def render_orchestrator(raw: bytes, source: bytes) -> bytes:
-    """Project only lifecycle glue, never the personalized/template architecture."""
-    start, end = lifecycle_span(raw)
-    source_start, source_end = lifecycle_span(source)
-    block = source[source_start:source_end].replace(b"\r\n", b"\n")
-    if raw[end:end + 2] == b"\r\n":
-        block = block.replace(b"\n", b"\r\n")
-    return raw[:start] + block + raw[end:]
+    return rendered.encode("utf-8") + method
 
 
 def generate(root: Path, *, check: bool = False) -> list[Path]:
@@ -88,14 +100,6 @@ def generate(root: Path, *, check: bool = False) -> list[Path]:
                 changes.append(path)
                 if not check:
                     path.write_bytes(new)
-    path = architecture_root / "orchestrator" / "default.md"
-    old = path.read_bytes()
-    source = (root / "prompts" / "orchestrator-role.md").read_bytes()
-    new = render_orchestrator(old, source)
-    if new != old:
-        changes.append(path)
-        if not check:
-            path.write_bytes(new)
     return changes
 
 

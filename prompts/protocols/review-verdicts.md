@@ -78,12 +78,17 @@ Worktree edits, tests and commits are reversible and autonomous within the agree
 scope. Review gates the merge, not an own-worktree commit. Before each merge,
 compare the current human words/requirements against the diff and evidence:
 one-line intent check for process tiers 1–2; full intent gate for tier 3.
-Required review, intent approval and release approval are distinct gates.
-A merged candidate remains **reviewing** until the human has seen the result;
-APPROVE, candidate-ready, a successful merge or model judgement is not Done.
+Required review and intent approval are distinct gates. Release approval, the final
+develop → master PR, follows the HITL mode: with HITL ON the human approves and merges it;
+with HITL OFF (fully autonomous) no human gates it and the orchestrator completes it once
+the per-merge intent checks have passed.
+A merged candidate remains **reviewing** until the human has seen the result (HITL ON);
+APPROVE, candidate-ready, a successful merge or model judgement is not Done. With HITL OFF
+(fully autonomous) there is no human look: the orchestrator completes the card once review,
+validation and the per-merge intent checks have passed.
 Editor restart/rebuild, deletions, downloads, VRAM loads, external side effects
 and public pushes retain their separate approval gates. Autonomy/HITL mode never
-bypasses a required merge intent gate or human-look completion condition.
+bypasses a required merge intent gate; only HITL ON adds the human-look completion condition.
 
 ## Review Discipline
 

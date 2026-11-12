@@ -169,7 +169,7 @@ liteharness send-input <agent-id> "fix the auth bug" # send prompts
 liteharness send-input <agent-id> "/compact"         # send slash commands
 liteharness read-output <agent-id>                   # read agent's terminal output
 liteharness pty-list                                 # list all PTY sessions
-liteharness pty-kill <agent-id>                      # close only when the human asks
+liteharness pty-kill <agent-id>                      # close a PTY session
 ```
 
 The daemon auto-starts if needed. Token-authenticated — only processes that can read `~/.liteharness/pty_daemon.lock` can connect. Executable whitelist: only `claude`, `codex`, `python` can be spawned.
@@ -279,8 +279,6 @@ ls ~/.claude/projects/<project-slug>/<session-id>.jsonl
 ```
 
 A directory at that id instead of a file means the transcript is not being written.
-
-**Closing terminals:** Close a terminal only when the human explicitly asks.
 
 ## Agent Lifecycle: persistent named seats
 
@@ -422,6 +420,6 @@ Match the polymath to the task:
 | "send /compact to Recon"            | `liteharness send-input <id> "/compact"` (PTY) or `--headed` (UIAutomation)                                    |
 | "what's Recon doing?"               | `liteharness read-output <id>` (PTY) or `--headed <handle:pane>`                                               |
 | "follow up with that agent" | Inbox the same live named seat with `liteharness send <agent-id> "<follow-up task>" --from <your-agent-id>`; resume only after its process is gone |
-| "close that terminal" | `liteharness pty-kill <id>` when the human explicitly asks |
+| "close that terminal" | `liteharness pty-kill <id>` |
 | "list terminals"                    | `liteharness wt-list-panes`                                                                                    |
 | "start liteharness"                 | `python -m liteharness.hooks register`                                                                         |
