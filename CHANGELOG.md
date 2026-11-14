@@ -6,6 +6,13 @@ Historical source landing dates below are not reconstructed publication timestam
 ## [1.0.25] — Unreleased
 
 ### Changed
+- Fourteen skill files and three new ones are brought up to the liteharness 0.4.10
+  catalog, the copy the package ships, which had moved ahead of the plugin since
+  October: `ls-conversation-lookup` (memory and LiteTUI sources, lookup events), `ls-theater`
+  (the Send button, `AskSend`), `ls-youtube`, `ls-gauntlet`, `ls-eval-gate` and
+  `ls-init-liteharness` (the role words), and `ls-tts` (versions spoken as "point").
+  `ls-liteharness` goes the other way: the plugin's copy was the newer one and the catalog
+  now ships it.
 - The shipped prompts carry the current doctrine. All 51 prompt files that had fallen behind
   the maintained copy are brought up to it: release approval and the human look follow the
   HITL mode (with HITL off there is no human look); a separate reviewer seat is used only
