@@ -3,6 +3,15 @@
 User-facing changes are grouped by version using [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Historical source landing dates below are not reconstructed publication timestamps.
 
+## [1.0.26] — Unreleased
+
+### Removed
+- The `agent.spawn` hook and its `spawnDenial` cwd check are gone. Native `Agent()` subagents
+  are not hooked at all. Claude Code refuses Code Mode while a plugin registers `agent.spawn`
+  (or `agent.offer`, `session.send`, `tool.*` and the tool-checking `classic.*` events), and the
+  check was never meant to gate subagents. A test now fails if any of those events is
+  registered again.
+
 ## [1.0.25] — Unreleased
 
 ### Changed

@@ -12,8 +12,6 @@ let processFailure = false
 let persistenceFailure = false
 let sid = 'seat'
 let compactCalls = 0
-let forwarded = 0
-let statCalls = 0
 let blockNextIdentity = false
 let identityEntered
 let releaseIdentity
@@ -35,7 +33,7 @@ const $ = {
     if (persistenceFailure && key.startsWith('handoff.')) throw new Error('store unavailable')
     files.set(key, value)
   } },
-  fs: { write: async () => {}, stat: async () => { statCalls++; return { kind: 'dir', isLink: false, realPath: '/workspace' } } },
+  fs: { write: async () => {}, stat: async () => ({ kind: 'dir', isLink: false, realPath: '/workspace' }) },
   process: { run: async argv => {
     assert.deepEqual(argv, ['python', '-m', 'liteharness.mod_fleet'])
     if (processFailure) return { exitCode: 1, stdout: '', stderr: 'unavailable' }
@@ -59,13 +57,18 @@ register((name, matcher, hook) => {
   const handle = { catch(fn) { registration.catchHandler = fn; return handle } }
   return handle
 })
+// Claude Code refuses Code Mode while any plugin hook registers one of these events.
+const CODE_MODE_BLOCKERS = ['tool.call', 'tool.check', 'tool.judge', 'tool.run', 'agent.offer', 'agent.spawn', 'session.send',
+  ...['PreToolUse', 'PermissionRequest', 'PermissionDenied', 'PostToolUse', 'PostToolUseFailure', 'TaskCreated', 'TaskCompleted',
+    'Elicitation', 'ElicitationResult', 'WorktreeCreate'].map(name => 'classic.' + name)]
+for (const { name } of registrations.values()) assert.ok(!CODE_MODE_BLOCKERS.includes(name), 'Code Mode blocker registered: ' + name)
 async function fire(name, event = {}) {
   const matched = [...registrations.values()].filter(r => r.name === name && Object.entries(r.matcher).every(([k, v]) => event[k] === v))
   // Paste adds a broad Pane middleware which passes unrelated panes through.
   // Keep the single-handler contract for all other exercised event shapes.
   const fleetPane = name === 'ui.render' && event.component === 'Pane' && event.requestId === 'liteharness-fleet'
   assert.equal(matched.length, fleetPane ? 2 : 1, 'expected composed handlers for fixture event')
-  let next = async e => { forwarded++; return e }
+  let next = async e => e
   for (const registration of matched) {
     const downstream = next
     next = async e => {
@@ -113,30 +116,6 @@ processFailure = true
 assert.match((await fire('command.run', { command: 'tick' })).text, /failed/)
 assert.match(text(await fire('ui.render', { component: 'Pane', requestId: 'liteharness-fleet' })), /previous snapshot/)
 processFailure = false
-const validSpawn = { prompt: 'no tier line', model: 'claude-opus-5-5[1m]', cwd: '/workspace', parentModel: 'claude-opus-5-5[1m]', fork: false }
-const beforeSpawnForwarded = forwarded
-const beforeSpawnStats = statCalls
-// Allowed Agent() calls reach the host's continuation unchanged: any model (fable included) or none, no role line.
-const allowedModels = [undefined, 'opus', 'sonnet', 'haiku', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5',
-  'claude-opus-5-5[1m]', 'claude-sonnet-5-5[1m]', 'claude-haiku-5-5[1m]', 'fable', 'claude-fable-5-1[1m]', 'inherit', 'gpt-5']
-for (const model of allowedModels) {
-  const event = { ...validSpawn, model }
-  assert.equal(await fire('agent.spawn', event), event, 'allowed spawn must continue with its own event: ' + model)
-}
-assert.equal(forwarded, beforeSpawnForwarded + allowedModels.length, 'every allowed Agent() call continues exactly once')
-// isolation:"worktree" lives under the session's repo: a cwd inside the session directory also continues.
-const inside = { ...validSpawn, model: 'sonnet', cwd: '/workspace/.claude/worktrees/agent-x' }
-assert.equal(await fire('agent.spawn', inside), inside, 'a worktree inside the session directory must continue')
-const afterInside = forwarded
-// Refused calls get a deny and never continue.
-const beforeRefused = afterInside
-for (const cwd of ['/other', '/workspace-evil', '/workspace-evil/x', '/workspace/../other']) {
-  for (const model of [undefined, 'sonnet', 'fable']) {
-    assert.match((await fire('agent.spawn', { ...validSpawn, model, cwd })).deny, /cwd must be the session/, cwd)
-  }
-}
-assert.equal(forwarded, beforeRefused, 'a refused Agent() call must not continue')
-assert.equal(statCalls, beforeSpawnStats, 'the guard does not inspect requested filesystem paths')
 // A turn starts while the final native-dispatch identity read is awaiting.
 await fire('command.run', { command: 'compact-seat' })
 const entered = new Promise(resolve => { identityEntered = resolve })
