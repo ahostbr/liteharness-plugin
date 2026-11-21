@@ -24,17 +24,20 @@ Pull a YouTube video down, get its transcript, and cut it into frames — one sc
 
 1. **Parse the input**: Extract the YouTube URL from `$ARGUMENTS`. Note which artefacts the user asked for, and any output path.
 
-2. **Run the script** — all three artefacts is the default:
+2. **Run the script: TRANSCRIPT ONLY is the default** (Ryan 2026-11-21: *"update /liteharness:ls-youtube so that it defaults to transcript only"*). Pass `-NoVideo -NoFrames` unless the user explicitly asked for the video file or for frames:
 
    ```bash
-   powershell.exe -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/Get-YouTube.ps1" -Url "VIDEO_URL"
+   # the default: transcript only, nothing downloaded but captions
+   powershell.exe -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/Get-YouTube.ps1" -Url "VIDEO_URL" -NoVideo -NoFrames
    ```
 
-   Only what was asked for:
+   **If a video did get downloaded** (frames were asked for, or a fallback fetched it), delete `<MediaRoot>/<video_id>/video.mp4` once the transcript/frames are done, unless the user said to keep the video (Ryan, same day: *"del video if u download it"*). Report that it was deleted.
+
+   Only when the user explicitly asks for more:
 
    ```bash
-   # transcript only — what this skill did before it grew the other two
-   powershell.exe -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/Get-YouTube.ps1" -Url "VIDEO_URL" -NoVideo -NoFrames
+   # all three: video + transcript + frames (only on request)
+   powershell.exe -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/Get-YouTube.ps1" -Url "VIDEO_URL"
 
    # video + transcript, no frames
    powershell.exe -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/Get-YouTube.ps1" -Url "VIDEO_URL" -NoFrames
